@@ -13,6 +13,8 @@ interface NavigationState {
   stack: Screen[];
   /** 새 화면으로 이동한다 (히스토리에 새 항목을 쌓는다). */
   push: (screen: Screen) => void;
+  /** 지금까지의 이동 스택을 버리고 [메인 → screen] 두 단계로 곧장 이동한다(검색 결과 이동용). */
+  jumpTo: (screen: Screen) => void;
   /** 뒤로가기 버튼(상단바)과 폰의 뒤로가기가 동일하게 이 함수만 호출한다. */
   goBack: () => void;
   /** 어디서든 메인 화면으로 이동한다. */
@@ -30,6 +32,11 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
     const newStack = [...get().stack, screen];
     set({ stack: newStack });
     window.history.pushState({ depth: newStack.length }, '');
+  },
+
+  jumpTo: (screen) => {
+    set({ stack: [mainScreen, screen] });
+    window.history.pushState({ depth: 2 }, '');
   },
 
   goBack: () => {

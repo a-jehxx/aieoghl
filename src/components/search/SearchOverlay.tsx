@@ -17,7 +17,7 @@ export function SearchOverlay({ open, houseId, houseName, onClose }: SearchOverl
   const [results, setResults] = useState<SearchResult[] | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const push = useNavigationStore((s) => s.push);
+  const jumpTo = useNavigationStore((s) => s.jumpTo);
   const startGuide = useGuideStore((s) => s.start);
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export function SearchOverlay({ open, houseId, houseName, onClose }: SearchOverl
       binId: r.binId,
       binName: r.binName,
     });
-    push({ type: 'floor', floorId: r.floorId, name: r.floorName, houseId: houseId!, houseName });
+    jumpTo({ type: 'floor', floorId: r.floorId, name: r.floorName, houseId: houseId!, houseName });
     onClose();
   }
 
