@@ -1,13 +1,9 @@
 import { createMemoryRepository } from '@/repository/memoryRepository';
 import type { Repository } from '@/repository/types';
-import {
-  DEMO_CABINET_PHOTO,
-  DEMO_DESK_PHOTO,
-  DEMO_FLOOR_PLAN,
-  DEMO_SOFA_PHOTO,
-  DEMO_TV_STAND_PHOTO,
-  DEMO_WARDROBE_PHOTO,
-} from './demoAssets';
+import { DEMO_ROOMS } from './demo/demoData';
+import { demoFloorPlanDataUrl } from './demo/floorPlanSvg';
+import { DEMO_FURNITURE, furnitureDataUrl } from './demo/furnitureAssets';
+import { DEMO_ZONES, zoneByKey, zoneToUnitPolygon } from './demo/floorLayout';
 
 export interface DemoEntry {
   repository: Repository;
@@ -17,86 +13,61 @@ export interface DemoEntry {
   floorName: string;
 }
 
-/** 로그인·서버 없이 쓸 수 있는 독립된 메모리 저장소에 체험용 샘플 집을 채워 넣는다. */
+function furnitureByKey(key: string) {
+  const piece = DEMO_FURNITURE.find((f) => f.key === key);
+  if (!piece) throw new Error(`알 수 없는 가구 key: ${key}`);
+  return piece;
+}
+
+/** 로그인·서버 없이 쓸 수 있는 독립된 메모리 저장소에 체험용 샘플 집(84㎡ 3룸 아파트)을 채워 넣는다. */
 export async function createDemoRepository(): Promise<DemoEntry> {
   const repo = createMemoryRepository();
 
   const house = await repo.createHouse({ name: '체험용 우리집', ownerUid: 'demo' });
-  const planPhoto = await repo.savePhoto(house.id, DEMO_FLOOR_PLAN);
+  const planPhoto = await repo.savePhoto(house.id, demoFloorPlanDataUrl());
   const floor = await repo.createFloor({ houseId: house.id, name: '1층', order: 0, planPhotoId: planPhoto.id });
 
-  const livingRoom = await repo.createRoom({
-    floorId: floor.id,
-    name: '거실',
-    points: [
-      { x: 0.04, y: 0.48 },
-      { x: 0.68, y: 0.48 },
-      { x: 0.68, y: 0.95 },
-      { x: 0.04, y: 0.95 },
-    ],
-  });
-  const kitchen = await repo.createRoom({
-    floorId: floor.id,
-    name: '주방',
-    points: [
-      { x: 0.04, y: 0.05 },
-      { x: 0.68, y: 0.05 },
-      { x: 0.68, y: 0.48 },
-      { x: 0.04, y: 0.48 },
-    ],
-  });
-  const bedroom = await repo.createRoom({
-    floorId: floor.id,
-    name: '침실',
-    points: [
-      { x: 0.68, y: 0.05 },
-      { x: 0.96, y: 0.05 },
-      { x: 0.96, y: 0.95 },
-      { x: 0.68, y: 0.95 },
-    ],
-  });
+  const registeredZones = DEMO_ZONES.filter((z) => z.registered);
 
-  async function addFurniture(roomId: string, name: string, photoDataUrl: string, x: number, y: number) {
-    const photo = await repo.savePhoto(roomId, photoDataUrl);
-    return repo.createFurniture({ roomId, name, photoId: photo.id, x, y });
-  }
-  async function addBin(furnitureId: string, name: string, x: number, y: number, w: number, h: number) {
-    return repo.createBin({ furnitureId, name, x, y, w, h });
-  }
-  async function addItem(binId: string, name: string, emoji: string) {
-    return repo.createItem({ binId, name, emoji });
+  for (const roomSpec of DEMO_ROOMS) {
+    const zone = zoneByKey(roomSpec.zoneKey);
+    if (!zone.registered) throw new Error(`등록 대상이 아닌 방: ${zone.key}`);
+
+    const room = await repo.createRoom({
+      floorId: floor.id,
+      name: zone.label,
+      points: zoneToUnitPolygon(zone),
+    });
+
+    for (const furnitureSpec of roomSpec.furniture) {
+      const piece = furnitureByKey(furnitureSpec.furnitureKey);
+      const photo = await repo.savePhoto(room.id, furnitureDataUrl(piece));
+      const furniture = await repo.createFurniture({
+        roomId: room.id,
+        name: piece.name,
+        photoId: photo.id,
+        x: furnitureSpec.x,
+        y: furnitureSpec.y,
+      });
+
+      for (const binSpec of furnitureSpec.bins) {
+        const binDef = piece.bins.find((b) => b.name === binSpec.binName);
+        if (!binDef) throw new Error(`${piece.name}에 없는 보관함: ${binSpec.binName}`);
+        const [x, y, w, h] = binDef.rect;
+        const bin = await repo.createBin({ furnitureId: furniture.id, name: binDef.name, x, y, w, h });
+
+        for (const itemSpec of binSpec.items) {
+          await repo.createItem({ binId: bin.id, name: itemSpec.name, emoji: itemSpec.emoji });
+        }
+      }
+    }
   }
 
-  const tvStand = await addFurniture(livingRoom.id, 'TV장', DEMO_TV_STAND_PHOTO, 0.3, 0.15);
-  const sofa = await addFurniture(livingRoom.id, '소파', DEMO_SOFA_PHOTO, 0.65, 0.15);
-  const cabinet = await addFurniture(kitchen.id, '수납장', DEMO_CABINET_PHOTO, 0.5, 0.15);
-  const wardrobe = await addFurniture(bedroom.id, '옷장', DEMO_WARDROBE_PHOTO, 0.3, 0.15);
-  const desk = await addFurniture(bedroom.id, '책상', DEMO_DESK_PHOTO, 0.65, 0.15);
-
-  const tvDrawer = await addBin(tvStand.id, '서랍', 0.35, 0.4, 0.3, 0.22);
-  const sofaGap = await addBin(sofa.id, '쿠션 밑', 0.35, 0.4, 0.3, 0.22);
-  const cabinetTop = await addBin(cabinet.id, '위 칸', 0.3, 0.15, 0.4, 0.25);
-  const cabinetBottom = await addBin(cabinet.id, '아래 칸', 0.3, 0.55, 0.4, 0.25);
-  const wardrobeDrawer = await addBin(wardrobe.id, '서랍', 0.35, 0.4, 0.3, 0.22);
-  const deskDrawer = await addBin(desk.id, '서랍', 0.35, 0.4, 0.3, 0.22);
-
-  await addItem(tvDrawer.id, '리모컨', '📺');
-  await addItem(tvDrawer.id, '건전지', '🔋');
-  await addItem(tvDrawer.id, '충전기', '🔌');
-
-  await addItem(sofaGap.id, '동전', '🪙');
-  await addItem(sofaGap.id, '안경', '👓');
-
-  await addItem(cabinetTop.id, '숟가락', '🥄');
-  await addItem(cabinetTop.id, '종이컵', '🥤');
-  await addItem(cabinetBottom.id, '양초', '🕯️');
-
-  await addItem(wardrobeDrawer.id, '양말', '🧦');
-  await addItem(wardrobeDrawer.id, '장갑', '🧤');
-
-  await addItem(deskDrawer.id, '볼펜심', '🖊️');
-  await addItem(deskDrawer.id, '가위', '✂️');
-  await addItem(deskDrawer.id, '클립', '📎');
+  // 등록되지 않은(도면에만 있는) 구역 개수도 맞는지 확인 — 등록된 9개 외 6개.
+  const unregisteredCount = DEMO_ZONES.length - registeredZones.length;
+  if (unregisteredCount !== 6) {
+    throw new Error(`도면에만 있는 구역 수가 예상과 다름: ${unregisteredCount}`);
+  }
 
   return { repository: repo, houseId: house.id, houseName: house.name, floorId: floor.id, floorName: floor.name };
 }
