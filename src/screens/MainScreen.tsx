@@ -2,53 +2,172 @@ import { useEffect, useState } from 'react';
 import { repository } from '@/repository';
 import type { House } from '@/types';
 import { useNavigationStore } from '@/store/navigationStore';
+import { useToastStore } from '@/store/toastStore';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Loading } from '@/components/common/Loading';
+import { PromptDialog } from '@/components/common/PromptDialog';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { getOwnerUid } from '@/lib/ownerUid';
+
+type DialogState =
+  | { type: 'none' }
+  | { type: 'create' }
+  | { type: 'rename'; house: House }
+  | { type: 'delete'; house: House };
 
 export function MainScreen() {
   const [houses, setHouses] = useState<House[] | null>(null);
+  const [dialog, setDialog] = useState<DialogState>({ type: 'none' });
   const push = useNavigationStore((s) => s.push);
+  const showToast = useToastStore((s) => s.show);
+
+  async function refresh() {
+    const list = await repository.listHouses();
+    setHouses(list);
+  }
 
   useEffect(() => {
-    let active = true;
-    repository.listHouses().then((list) => {
-      if (active) setHouses(list);
-    });
-    return () => {
-      active = false;
-    };
+    refresh();
   }, []);
 
-  const goToAddHouse = () => push({ type: 'placeholder', title: '집 추가' });
+  async function openHouse(house: House) {
+    const floors = await repository.listFloors(house.id);
+    if (floors.length === 1) {
+      const floor = floors[0];
+      push({
+        type: 'floor',
+        floorId: floor.id,
+        name: floor.name,
+        houseId: house.id,
+        houseName: house.name,
+      });
+    } else {
+      push({ type: 'house', houseId: house.id, name: house.name });
+    }
+  }
+
+  async function handleCreate(name: string) {
+    try {
+      const house = await repository.createHouse({ name, ownerUid: getOwnerUid() });
+      const floor = await repository.createFloor({
+        houseId: house.id,
+        name: '1층',
+        order: 0,
+        planPhotoId: null,
+      });
+      setDialog({ type: 'none' });
+      push({
+        type: 'floor',
+        floorId: floor.id,
+        name: floor.name,
+        houseId: house.id,
+        houseName: house.name,
+      });
+    } catch {
+      showToast('집을 만들지 못했어요. 다시 시도해주세요.');
+    }
+  }
+
+  async function handleRename(house: House, name: string) {
+    try {
+      await repository.updateHouse(house.id, { name });
+      setDialog({ type: 'none' });
+      await refresh();
+    } catch {
+      showToast('이름을 바꾸지 못했어요. 다시 시도해주세요.');
+    }
+  }
+
+  async function handleDelete(house: House) {
+    try {
+      await repository.removeHouse(house.id);
+      setDialog({ type: 'none' });
+      showToast('집을 삭제했어요.');
+      await refresh();
+    } catch {
+      showToast('삭제하지 못했어요. 다시 시도해주세요.');
+    }
+  }
 
   if (houses === null) {
     return <Loading />;
   }
 
-  if (houses.length === 0) {
-    return (
-      <EmptyState
-        title="아직 등록된 집이 없어요"
-        description="집을 추가하고 도면을 등록하면 물건 위치를 기록할 수 있어요."
-        actionLabel="집 추가하기"
-        onAction={goToAddHouse}
-      />
-    );
-  }
-
   return (
-    <ul className="divide-y divide-slate-100">
-      {houses.map((house) => (
-        <li key={house.id}>
-          <button
-            type="button"
-            onClick={() => push({ type: 'placeholder', title: house.name })}
-            className="flex h-16 w-full items-center px-4 text-left text-base font-medium text-slate-900 active:bg-slate-50"
-          >
-            {house.name}
-          </button>
-        </li>
-      ))}
-    </ul>
+    <div className="flex h-full flex-col overflow-y-auto p-4">
+      <button
+        type="button"
+        onClick={() => setDialog({ type: 'create' })}
+        className="mb-3 flex h-14 w-full items-center justify-center rounded-xl border-2 border-dashed border-slate-300 text-base font-medium text-slate-500 active:bg-slate-100"
+      >
+        + 새 집 만들기
+      </button>
+
+      {houses.length === 0 ? (
+        <EmptyState
+          title="아직 등록된 집이 없어요"
+          description="집을 추가하고 도면을 등록하면 물건 위치를 기록할 수 있어요."
+        />
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {houses.map((house) => (
+            <li
+              key={house.id}
+              className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white pr-1 shadow-sm"
+            >
+              <button
+                type="button"
+                onClick={() => openHouse(house)}
+                className="flex h-16 flex-1 items-center px-4 text-left text-base font-medium text-slate-900 active:bg-slate-50"
+              >
+                {house.name}
+              </button>
+              <button
+                type="button"
+                aria-label="이름 수정"
+                onClick={() => setDialog({ type: 'rename', house })}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg active:bg-slate-100"
+              >
+                ✏️
+              </button>
+              <button
+                type="button"
+                aria-label="삭제"
+                onClick={() => setDialog({ type: 'delete', house })}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg active:bg-slate-100"
+              >
+                🗑
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <PromptDialog
+        open={dialog.type === 'create'}
+        title="새 집 만들기"
+        placeholder="예: 우리 집"
+        confirmLabel="만들기"
+        onConfirm={handleCreate}
+        onCancel={() => setDialog({ type: 'none' })}
+      />
+      <PromptDialog
+        open={dialog.type === 'rename'}
+        title="집 이름 수정"
+        initialValue={dialog.type === 'rename' ? dialog.house.name : ''}
+        confirmLabel="저장"
+        onConfirm={(name) => dialog.type === 'rename' && handleRename(dialog.house, name)}
+        onCancel={() => setDialog({ type: 'none' })}
+      />
+      <ConfirmDialog
+        open={dialog.type === 'delete'}
+        title="이 집을 삭제할까요?"
+        description="이 집의 모든 층·방·가구·보관함·물건이 함께 삭제돼요."
+        confirmLabel="삭제"
+        danger
+        onConfirm={() => dialog.type === 'delete' && handleDelete(dialog.house)}
+        onCancel={() => setDialog({ type: 'none' })}
+      />
+    </div>
   );
 }

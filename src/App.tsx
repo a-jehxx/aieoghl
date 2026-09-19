@@ -4,12 +4,18 @@ import { TopBar } from '@/components/common/TopBar';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { Toast } from '@/components/common/Toast';
 import { MainScreen } from '@/screens/MainScreen';
+import { HouseScreen } from '@/screens/HouseScreen';
+import { FloorScreen } from '@/screens/FloorScreen';
 import { PlaceholderScreen } from '@/screens/PlaceholderScreen';
 
 function getScreenTitle(screen: Screen): string {
   switch (screen.type) {
     case 'main':
       return 'HSM';
+    case 'house':
+      return screen.name;
+    case 'floor':
+      return screen.name;
     case 'placeholder':
       return screen.title;
   }
@@ -19,6 +25,10 @@ function renderScreen(screen: Screen) {
   switch (screen.type) {
     case 'main':
       return <MainScreen />;
+    case 'house':
+      return <HouseScreen houseId={screen.houseId} houseName={screen.name} />;
+    case 'floor':
+      return <FloorScreen floorId={screen.floorId} />;
     case 'placeholder':
       return <PlaceholderScreen title={screen.title} />;
   }
@@ -29,6 +39,7 @@ export default function App() {
   const exitConfirmOpen = useNavigationStore((s) => s.exitConfirmOpen);
   const goBack = useNavigationStore((s) => s.goBack);
   const goHome = useNavigationStore((s) => s.goHome);
+  const push = useNavigationStore((s) => s.push);
   const confirmExit = useNavigationStore((s) => s.confirmExit);
   const cancelExit = useNavigationStore((s) => s.cancelExit);
   const handlePopState = useNavigationStore((s) => s.handlePopState);
@@ -43,10 +54,22 @@ export default function App() {
 
   const current = stack[stack.length - 1];
 
+  const extra =
+    current.type === 'floor' ? (
+      <button
+        type="button"
+        onClick={() => push({ type: 'house', houseId: current.houseId, name: current.houseName })}
+        aria-label="층 관리"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xl active:bg-slate-100"
+      >
+        🗂
+      </button>
+    ) : null;
+
   return (
     <div className="flex h-dvh flex-col bg-slate-50">
-      <TopBar title={getScreenTitle(current)} onBack={goBack} onHome={goHome} />
-      <main className="flex-1 overflow-y-auto">{renderScreen(current)}</main>
+      <TopBar title={getScreenTitle(current)} onBack={goBack} onHome={goHome} extra={extra} />
+      <main className="flex-1 overflow-hidden">{renderScreen(current)}</main>
       <ConfirmDialog
         open={exitConfirmOpen}
         title="앱을 종료하시겠습니까?"

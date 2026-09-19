@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 
-export type Screen = { type: 'main' } | { type: 'placeholder'; title: string };
+export type Screen =
+  | { type: 'main' }
+  | { type: 'house'; houseId: string; name: string }
+  | { type: 'floor'; floorId: string; name: string; houseId: string; houseName: string }
+  | { type: 'placeholder'; title: string };
 
 interface NavigationState {
   stack: Screen[];
