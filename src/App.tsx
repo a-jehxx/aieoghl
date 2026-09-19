@@ -6,7 +6,9 @@ import { Toast } from '@/components/common/Toast';
 import { MainScreen } from '@/screens/MainScreen';
 import { HouseScreen } from '@/screens/HouseScreen';
 import { FloorScreen } from '@/screens/FloorScreen';
-import { PlaceholderScreen } from '@/screens/PlaceholderScreen';
+import { RoomScreen } from '@/screens/RoomScreen';
+import { FurnitureScreen } from '@/screens/FurnitureScreen';
+import { BinScreen } from '@/screens/BinScreen';
 
 function getScreenTitle(screen: Screen): string {
   switch (screen.type) {
@@ -16,8 +18,12 @@ function getScreenTitle(screen: Screen): string {
       return screen.name;
     case 'floor':
       return screen.name;
-    case 'placeholder':
-      return screen.title;
+    case 'room':
+      return screen.name;
+    case 'furniture':
+      return screen.name;
+    case 'bin':
+      return screen.name;
   }
 }
 
@@ -29,8 +35,12 @@ function renderScreen(screen: Screen) {
       return <HouseScreen houseId={screen.houseId} houseName={screen.name} />;
     case 'floor':
       return <FloorScreen floorId={screen.floorId} />;
-    case 'placeholder':
-      return <PlaceholderScreen title={screen.title} />;
+    case 'room':
+      return <RoomScreen roomId={screen.roomId} />;
+    case 'furniture':
+      return <FurnitureScreen furnitureId={screen.furnitureId} />;
+    case 'bin':
+      return <BinScreen binId={screen.binId} />;
   }
 }
 

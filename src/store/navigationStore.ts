@@ -4,7 +4,9 @@ export type Screen =
   | { type: 'main' }
   | { type: 'house'; houseId: string; name: string }
   | { type: 'floor'; floorId: string; name: string; houseId: string; houseName: string }
-  | { type: 'placeholder'; title: string };
+  | { type: 'room'; roomId: string; name: string }
+  | { type: 'furniture'; furnitureId: string; name: string }
+  | { type: 'bin'; binId: string; name: string };
 
 interface NavigationState {
   stack: Screen[];

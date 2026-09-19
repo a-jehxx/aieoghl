@@ -6,6 +6,7 @@ import { useToastStore } from '@/store/toastStore';
 import { Loading } from '@/components/common/Loading';
 import { PromptDialog } from '@/components/common/PromptDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { SelectedItemBar } from '@/components/common/SelectedItemBar';
 import { PhotoCanvas } from '@/components/photo/PhotoCanvas';
 import { compressImage, PLAN_IMAGE_OPTIONS } from '@/lib/compressImage';
 
@@ -147,7 +148,7 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
     const room = rooms.find((r) => r.id === hitId);
     if (!room) return;
     if (mode === 'view') {
-      push({ type: 'placeholder', title: room.name });
+      push({ type: 'room', roomId: room.id, name: room.name });
     } else {
       setSelectedRoomId(room.id);
     }
@@ -318,31 +319,12 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
             )}
 
             {mode === 'edit' && selectedRoom && (
-              <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 bg-white/95 p-3">
-                <p className="flex-1 truncate text-sm font-medium text-slate-900">{selectedRoom.name}</p>
-                <button
-                  type="button"
-                  onClick={() => setDialog({ type: 'renameRoom', room: selectedRoom })}
-                  className="h-11 rounded-xl bg-slate-100 px-4 text-sm font-medium text-slate-700 active:bg-slate-200"
-                >
-                  이름 변경
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDialog({ type: 'deleteRoom', room: selectedRoom })}
-                  className="h-11 rounded-xl bg-red-500 px-4 text-sm font-medium text-white active:bg-red-600"
-                >
-                  삭제
-                </button>
-                <button
-                  type="button"
-                  aria-label="닫기"
-                  onClick={() => setSelectedRoomId(null)}
-                  className="flex h-11 w-11 items-center justify-center text-lg text-slate-500"
-                >
-                  ✕
-                </button>
-              </div>
+              <SelectedItemBar
+                label={selectedRoom.name}
+                onRename={() => setDialog({ type: 'renameRoom', room: selectedRoom })}
+                onDelete={() => setDialog({ type: 'deleteRoom', room: selectedRoom })}
+                onClose={() => setSelectedRoomId(null)}
+              />
             )}
           </div>
         </>
