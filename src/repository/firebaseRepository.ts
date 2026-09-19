@@ -278,12 +278,18 @@ export function createFirebaseRepository(): Repository {
       const uid = await getAuthReady();
       const id = generateId();
       const ts = now();
+      // 새 집을 만들 때는 houses/{id} 전체를 한 번에 값으로 써야 한다. 이름/ownerUid/members처럼
+      // 여러 하위 경로를 따로 써서 규칙이 그걸 "합쳐서" 판단하게 하면(멀티패스 update가 실제로는
+      // 그렇게 동작하더라도) 판단이 애매해질 수 있어서, 규칙과 똑같은 경로(houses/{id})를 정확히
+      // 겨냥해 생성 조건을 명확하게 만든다.
       await update(ref(db), {
-        [`houses/${id}/name`]: input.name,
-        [`houses/${id}/ownerUid`]: input.ownerUid,
-        [`houses/${id}/createdAt`]: ts,
-        [`houses/${id}/updatedAt`]: ts,
-        [`houses/${id}/members/${uid}`]: true,
+        [`houses/${id}`]: {
+          name: input.name,
+          ownerUid: input.ownerUid,
+          createdAt: ts,
+          updatedAt: ts,
+          members: { [uid]: true },
+        },
       });
       addDeviceHouseId(id);
       return { id, name: input.name, ownerUid: input.ownerUid, shareCode: null, createdAt: ts, updatedAt: ts };
