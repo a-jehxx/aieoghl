@@ -1,12 +1,13 @@
 import type { Bin, Floor, Furniture, House, Item, Photo, Room } from '@/types';
 import type { Repository } from './types';
+import { generateId } from '@/lib/id';
 
 function now() {
   return Date.now();
 }
 
 function makeId() {
-  return crypto.randomUUID();
+  return generateId();
 }
 
 export function createMemoryRepository(): Repository {

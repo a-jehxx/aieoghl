@@ -1,3 +1,5 @@
+import { generateId } from '@/lib/id';
+
 const STORAGE_KEY = 'hsm.ownerUid';
 
 /**
@@ -8,7 +10,7 @@ export function getOwnerUid(): string {
   try {
     const existing = window.localStorage.getItem(STORAGE_KEY);
     if (existing) return existing;
-    const id = crypto.randomUUID();
+    const id = generateId();
     window.localStorage.setItem(STORAGE_KEY, id);
     return id;
   } catch {
