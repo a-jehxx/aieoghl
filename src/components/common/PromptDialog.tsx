@@ -52,9 +52,9 @@ export function PromptDialog({
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
     >
-      <div className="w-full max-w-sm rounded-t-2xl bg-white p-5 sm:rounded-2xl">
-        <p className="text-lg font-semibold text-slate-900">{title}</p>
-        {description && <p className="mt-2 text-sm text-slate-600">{description}</p>}
+      <div className="w-full max-w-sm rounded-t-xl bg-card p-5 sm:rounded-xl">
+        <p className="text-lg font-semibold text-ink">{title}</p>
+        {description && <p className="mt-2 text-sm text-ink-sub">{description}</p>}
         <input
           ref={inputRef}
           type="text"
@@ -64,20 +64,20 @@ export function PromptDialog({
             if (e.key === 'Enter') handleConfirm();
           }}
           placeholder={placeholder}
-          className="mt-4 h-12 w-full rounded-xl border border-slate-300 px-3 text-base text-slate-900 focus:border-blue-500 focus:outline-none"
+          className="mt-4 h-12 w-full rounded-[10px] border border-line px-3 text-base text-ink focus:border-navy focus:outline-none"
         />
         <div className="mt-5 flex gap-2">
           <button
             type="button"
             onClick={onCancel}
-            className="h-11 flex-1 rounded-xl bg-slate-100 text-base font-medium text-slate-700 active:bg-slate-200"
+            className="h-11 flex-1 rounded-[10px] border border-line bg-white text-base font-medium text-ink active:bg-bg"
           >
             {cancelLabel}
           </button>
           <button
             type="button"
             onClick={handleConfirm}
-            className={`h-11 flex-1 rounded-xl bg-blue-600 text-base font-medium text-white active:bg-blue-700 ${
+            className={`h-11 flex-1 rounded-[10px] bg-navy text-base font-medium text-white active:opacity-80 ${
               trimmed ? '' : 'opacity-40'
             }`}
           >

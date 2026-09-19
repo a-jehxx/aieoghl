@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Search, Folder, Users } from 'lucide-react';
 import { useNavigationStore, type Screen } from '@/store/navigationStore';
 import { useGuideStore } from '@/store/guideStore';
 import { useDemoStore } from '@/store/demoStore';
@@ -115,9 +116,9 @@ export default function App() {
           type="button"
           onClick={() => setSearchOpen(true)}
           aria-label="검색"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xl active:bg-slate-100"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white active:bg-white/10"
         >
-          🔍
+          <Search size={22} strokeWidth={2} />
         </button>
       )}
       {current.type === 'floor' && (
@@ -125,9 +126,9 @@ export default function App() {
           type="button"
           onClick={() => push({ type: 'house', houseId: current.houseId, name: current.houseName })}
           aria-label="층 관리"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xl active:bg-slate-100"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white active:bg-white/10"
         >
-          🗂
+          <Folder size={22} strokeWidth={2} />
         </button>
       )}
       {current.type === 'house' && (
@@ -135,16 +136,16 @@ export default function App() {
           type="button"
           onClick={() => push({ type: 'share', houseId: current.houseId, houseName: current.name })}
           aria-label="가족 공유"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xl active:bg-slate-100"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white active:bg-white/10"
         >
-          👪
+          <Users size={22} strokeWidth={2} />
         </button>
       )}
     </>
   );
 
   return (
-    <div className="flex h-dvh flex-col bg-slate-50">
+    <div className="flex h-dvh flex-col bg-bg">
       <TopBar title={getScreenTitle(current)} onBack={goBack} onHome={goHome} extra={extra} />
       {!connected && !demoActive && <OfflineBanner />}
       {demoActive && <DemoBanner onExit={exitDemo} />}

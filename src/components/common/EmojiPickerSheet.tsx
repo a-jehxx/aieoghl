@@ -19,26 +19,26 @@ export function EmojiPickerSheet({ open, onSelect, onCancel }: EmojiPickerSheetP
   const category = EMOJI_CATEGORIES.find((c) => c.key === activeCategory) ?? EMOJI_CATEGORIES[0];
 
   return (
-    <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex flex-col bg-white">
-      <div className="flex h-14 shrink-0 items-center justify-between border-b border-slate-200 px-3">
-        <p className="text-lg font-semibold text-slate-900">이모티콘 선택</p>
+    <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex flex-col bg-card">
+      <div className="flex h-14 shrink-0 items-center justify-between border-b border-line px-3">
+        <p className="text-lg font-semibold text-ink">이모티콘 선택</p>
         <button
           type="button"
           onClick={onCancel}
           aria-label="닫기"
-          className="flex h-11 w-11 items-center justify-center text-xl text-slate-500"
+          className="flex h-11 w-11 items-center justify-center text-xl text-ink-sub"
         >
           ✕
         </button>
       </div>
-      <div className="flex shrink-0 gap-1 overflow-x-auto border-b border-slate-200 px-2 py-2">
+      <div className="flex shrink-0 gap-1 overflow-x-auto border-b border-line px-2 py-2">
         {EMOJI_CATEGORIES.map((c) => (
           <button
             key={c.key}
             type="button"
             onClick={() => setActiveCategory(c.key)}
             className={`h-10 shrink-0 rounded-full px-4 text-sm font-medium ${
-              c.key === activeCategory ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'
+              c.key === activeCategory ? 'bg-navy text-white' : 'bg-bg text-ink-sub'
             }`}
           >
             {c.label}
@@ -51,7 +51,7 @@ export function EmojiPickerSheet({ open, onSelect, onCancel }: EmojiPickerSheetP
             key={emoji}
             type="button"
             onClick={() => onSelect(emoji)}
-            className="flex h-14 items-center justify-center rounded-xl text-3xl active:bg-slate-100"
+            className="flex h-14 items-center justify-center rounded-xl text-3xl active:bg-bg"
           >
             {emoji}
           </button>

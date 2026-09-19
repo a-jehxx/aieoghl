@@ -8,6 +8,7 @@ import { Loading } from '@/components/common/Loading';
 import { PromptDialog } from '@/components/common/PromptDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { SelectedItemBar } from '@/components/common/SelectedItemBar';
+import { ModeToggle } from '@/components/common/ModeToggle';
 import { PhotoCanvas } from '@/components/photo/PhotoCanvas';
 
 interface FurnitureScreenProps {
@@ -227,27 +228,8 @@ export function FurnitureScreen({ furnitureId }: FurnitureScreenProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2 border-b border-slate-200 bg-white px-3 py-2">
-        <div className="flex overflow-hidden rounded-lg border border-slate-300">
-          <button
-            type="button"
-            onClick={() => setModeTo('view')}
-            className={`h-9 px-3 text-sm font-medium ${
-              mode === 'view' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600'
-            }`}
-          >
-            보기
-          </button>
-          <button
-            type="button"
-            onClick={() => setModeTo('edit')}
-            className={`h-9 px-3 text-sm font-medium ${
-              mode === 'edit' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600'
-            }`}
-          >
-            편집
-          </button>
-        </div>
+      <div className="flex items-center gap-2 border-b border-line bg-card px-3 py-2">
+        <ModeToggle mode={mode} onChange={setModeTo} />
       </div>
 
       {/* min-h-0: flex 자식은 기본적으로 내용(세로로 긴 사진)만큼 커지려 해서 화면보다 커질 수 있다.

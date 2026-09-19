@@ -27,22 +27,24 @@ export function ConfirmDialog({
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
     >
-      <div className="w-full max-w-sm rounded-t-2xl bg-white p-5 sm:rounded-2xl">
-        <p className="text-lg font-semibold text-slate-900">{title}</p>
-        {description && <p className="mt-2 text-sm text-slate-600">{description}</p>}
+      <div className="w-full max-w-sm rounded-t-xl bg-card p-5 sm:rounded-xl">
+        <p className="text-lg font-semibold text-ink">{title}</p>
+        {description && <p className="mt-2 text-sm text-ink-sub">{description}</p>}
         <div className="mt-5 flex gap-2">
           <button
             type="button"
             onClick={onCancel}
-            className="h-11 flex-1 rounded-xl bg-slate-100 text-base font-medium text-slate-700 active:bg-slate-200"
+            className="h-11 flex-1 rounded-[10px] border border-line bg-white text-base font-medium text-ink active:bg-bg"
           >
             {cancelLabel}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className={`h-11 flex-1 rounded-xl text-base font-medium text-white ${
-              danger ? 'bg-red-500 active:bg-red-600' : 'bg-blue-600 active:bg-blue-700'
+            className={`h-11 flex-1 rounded-[10px] text-base font-medium ${
+              danger
+                ? 'border border-line bg-white text-danger active:bg-danger/10'
+                : 'bg-navy text-white active:opacity-80'
             }`}
           >
             {confirmLabel}

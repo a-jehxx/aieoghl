@@ -9,6 +9,7 @@ import { PromptDialog } from '@/components/common/PromptDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { ActionSheet } from '@/components/common/ActionSheet';
 import { SelectedItemBar } from '@/components/common/SelectedItemBar';
+import { ModeToggle } from '@/components/common/ModeToggle';
 import { PhotoCanvas } from '@/components/photo/PhotoCanvas';
 import { compressImage, PLAN_IMAGE_OPTIONS } from '@/lib/compressImage';
 
@@ -205,31 +206,12 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
 
       {photoUrl && (
         <>
-          <div className="flex items-center justify-between gap-2 border-b border-slate-200 bg-white px-3 py-2">
-            <div className="flex overflow-hidden rounded-lg border border-slate-300">
-              <button
-                type="button"
-                onClick={() => setModeTo('view')}
-                className={`h-9 px-3 text-sm font-medium ${
-                  mode === 'view' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600'
-                }`}
-              >
-                보기
-              </button>
-              <button
-                type="button"
-                onClick={() => setModeTo('edit')}
-                className={`h-9 px-3 text-sm font-medium ${
-                  mode === 'edit' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600'
-                }`}
-              >
-                편집
-              </button>
-            </div>
+          <div className="flex items-center justify-between gap-2 border-b border-line bg-card px-3 py-2">
+            <ModeToggle mode={mode} onChange={setModeTo} />
             <button
               type="button"
               onClick={() => setReplaceMenuOpen(true)}
-              className="h-9 rounded-lg border border-slate-300 px-3 text-sm font-medium text-slate-600 active:bg-slate-100"
+              className="h-9 rounded-[10px] border border-line px-3 text-sm font-medium text-ink active:bg-bg"
             >
               도면 교체
             </button>
