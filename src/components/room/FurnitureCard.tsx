@@ -119,13 +119,19 @@ export function FurnitureCard({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
+      onContextMenu={(e) => e.preventDefault()}
       className={`absolute flex w-24 touch-none select-none flex-col items-center rounded-xl border-2 p-1.5 shadow-sm ${
         blinking ? 'hsm-blink-card' : 'border-emerald-500 bg-emerald-50'
       }`}
     >
       <div className="flex h-16 w-full items-center justify-center overflow-hidden rounded-lg bg-white">
         {photoUrl ? (
-          <img src={photoUrl} alt="" className="h-full w-full object-cover" draggable={false} />
+          <img
+            src={photoUrl}
+            alt=""
+            className="hsm-no-callout h-full w-full object-cover"
+            draggable={false}
+          />
         ) : (
           <span className="text-2xl">🪑</span>
         )}

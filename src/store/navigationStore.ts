@@ -11,7 +11,6 @@ export type Screen =
 
 interface NavigationState {
   stack: Screen[];
-  exitConfirmOpen: boolean;
   /** 새 화면으로 이동한다 (히스토리에 새 항목을 쌓는다). */
   push: (screen: Screen) => void;
   /** 뒤로가기 버튼(상단바)과 폰의 뒤로가기가 동일하게 이 함수만 호출한다. */
@@ -20,15 +19,12 @@ interface NavigationState {
   goHome: () => void;
   /** popstate(폰 뒤로가기 포함) 발생 시 호출된다. */
   handlePopState: () => void;
-  confirmExit: () => void;
-  cancelExit: () => void;
 }
 
 const mainScreen: Screen = { type: 'main' };
 
 export const useNavigationStore = create<NavigationState>((set, get) => ({
   stack: [mainScreen],
-  exitConfirmOpen: false,
 
   push: (screen) => {
     const newStack = [...get().stack, screen];
@@ -37,6 +33,7 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
   },
 
   goBack: () => {
+    if (get().stack.length <= 1) return;
     window.history.back();
   },
 
@@ -50,20 +47,9 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
     const { stack } = get();
     if (stack.length > 1) {
       set({ stack: stack.slice(0, -1) });
-      return;
     }
-    // 메인 화면에서 한 번 더 뒤로가면 종료 확인 팝업을 띄우고,
-    // 실제 이탈은 사용자가 "예"를 눌렀을 때만 허용한다.
-    window.history.pushState({ depth: 1 }, '');
-    set({ exitConfirmOpen: true });
-  },
-
-  confirmExit: () => {
-    set({ exitConfirmOpen: false });
-    window.history.back();
-  },
-
-  cancelExit: () => {
-    set({ exitConfirmOpen: false });
+    // 메인 화면에서 더 뒤로 가면(폰 뒤로가기 포함) 별도 확인 없이 브라우저(또는
+    // 설치된 앱)의 기본 동작에 맡긴다 — 웹은 스스로를 닫을 수 없어서, 종료 확인
+    // 팝업을 띄워도 실제로는 아무 일도 일어나지 않아 혼란만 줬다.
   },
 }));

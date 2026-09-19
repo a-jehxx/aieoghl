@@ -5,7 +5,6 @@ import { useDemoStore } from '@/store/demoStore';
 import { useConnectionStore } from '@/firebase/connection';
 import { formatLocationPath } from '@/lib/search';
 import { TopBar } from '@/components/common/TopBar';
-import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { GuideBanner } from '@/components/common/GuideBanner';
 import { OfflineBanner } from '@/components/common/OfflineBanner';
 import { DemoBanner } from '@/components/common/DemoBanner';
@@ -75,12 +74,9 @@ function isOnGuidePath(screen: Screen, target: { floorId: string; roomId: string
 
 export default function App() {
   const stack = useNavigationStore((s) => s.stack);
-  const exitConfirmOpen = useNavigationStore((s) => s.exitConfirmOpen);
   const goBack = useNavigationStore((s) => s.goBack);
   const goHome = useNavigationStore((s) => s.goHome);
   const push = useNavigationStore((s) => s.push);
-  const confirmExit = useNavigationStore((s) => s.confirmExit);
-  const cancelExit = useNavigationStore((s) => s.cancelExit);
   const handlePopState = useNavigationStore((s) => s.handlePopState);
   const guideTarget = useGuideStore((s) => s.target);
   const stopGuide = useGuideStore((s) => s.stop);
@@ -90,8 +86,6 @@ export default function App() {
   const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
-    // 폰의 뒤로가기(popstate)를 항상 가로챌 수 있도록 히스토리 항목을 하나 더 쌓아둔다.
-    window.history.pushState({ depth: 1 }, '');
     const onPopState = () => handlePopState();
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
@@ -154,18 +148,8 @@ export default function App() {
           onStop={stopGuide}
         />
       )}
-      <main className="relative flex-1 overflow-hidden">
-        {renderScreen(current)}
-        <InstallBanner />
-      </main>
-      <ConfirmDialog
-        open={exitConfirmOpen}
-        title="앱을 종료하시겠습니까?"
-        confirmLabel="예"
-        cancelLabel="아니오"
-        onConfirm={confirmExit}
-        onCancel={cancelExit}
-      />
+      <main className="relative flex-1 overflow-hidden">{renderScreen(current)}</main>
+      <InstallBanner />
       <SearchOverlay
         open={searchOpen}
         houseId={houseContext?.houseId ?? null}

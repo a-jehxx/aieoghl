@@ -63,7 +63,7 @@ export function InstallBanner() {
   }
 
   return (
-    <div className="absolute inset-x-3 bottom-3 z-30 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
+    <div className="border-t border-slate-200 bg-white p-3">
       {promptEvent ? (
         <>
           <p className="text-sm font-medium text-slate-900">앱처럼 설치해서 쓰시겠어요?</p>

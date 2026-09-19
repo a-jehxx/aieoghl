@@ -11,6 +11,15 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* 길게 누르는 제스처(가구 카드, 방/보관함 편집 등)가 있는 사진에서, 브라우저 자체의
+   "이미지 옵션" 메뉴가 대신 뜨는 것을 막는다. */
+img {
+  -webkit-user-drag: none;
+}
+.hsm-no-callout {
+  -webkit-touch-callout: none;
+}
+
 /* 위치 안내 깜빡임: 밝은 노랑, 0.8초 주기. 탭 동작을 막지 않도록 같은 요소에 덧붙인다. */
 @keyframes hsm-blink-shape {
   0%,
