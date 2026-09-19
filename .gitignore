@@ -9,6 +9,9 @@ dist-ssr
 .env.local
 .env.*.local
 
+# firebase CLI local cache
+.firebase
+
 # editor
 .vscode/*
 !.vscode/extensions.json
