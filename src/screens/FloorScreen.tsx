@@ -7,7 +7,7 @@ import { useGuideStore } from '@/store/guideStore';
 import { Loading } from '@/components/common/Loading';
 import { PromptDialog } from '@/components/common/PromptDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
-import { ActionSheet } from '@/components/common/ActionSheet';
+import { ActionSheet, CAMERA_LABEL, GALLERY_LABEL } from '@/components/common/ActionSheet';
 import { SelectedItemBar } from '@/components/common/SelectedItemBar';
 import { ModeToggle } from '@/components/common/ModeToggle';
 import { PhotoCanvas } from '@/components/photo/PhotoCanvas';
@@ -172,7 +172,7 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
 
   if (!floor) {
     return (
-      <div className="flex h-full items-center justify-center px-6 text-center text-sm text-slate-500">
+      <div className="flex h-full items-center justify-center px-6 text-center text-[15px] text-ink-sub">
         층 정보를 찾을 수 없어요.
       </div>
     );
@@ -184,22 +184,22 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
     <div className="flex h-full flex-col">
       {!photoUrl && (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-          <p className="text-base font-semibold text-slate-900">이 층의 도면 사진을 추가해주세요</p>
-          <p className="text-sm text-slate-500">도면 위에 방을 그려서 물건 위치를 기록할 수 있어요.</p>
+          <p className="text-lg font-bold text-ink">이 층의 도면 사진을 추가해주세요</p>
+          <p className="text-[15px] text-ink-sub">도면 위에 방을 그려서 물건 위치를 기록할 수 있어요.</p>
           <div className="mt-2 flex w-full max-w-xs flex-col gap-3">
             <button
               type="button"
               onClick={() => fileInputCameraRef.current?.click()}
-              className="h-12 rounded-xl bg-blue-600 text-base font-medium text-white active:bg-blue-700"
+              className="h-12 rounded-full bg-navy text-lg font-medium text-white active:opacity-80"
             >
-              도면 사진 촬영
+              📷 도면 사진 촬영
             </button>
             <button
               type="button"
               onClick={() => fileInputGalleryRef.current?.click()}
-              className="h-12 rounded-xl bg-slate-100 text-base font-medium text-slate-700 active:bg-slate-200"
+              className="h-12 rounded-full border border-line bg-white text-lg font-medium text-ink active:bg-bg"
             >
-              도면 가져오기
+              🖼️ 도면 가져오기
             </button>
           </div>
         </div>
@@ -212,11 +212,17 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
             <button
               type="button"
               onClick={() => setReplaceMenuOpen(true)}
-              className="h-11 rounded-[10px] border border-line px-3 text-sm font-medium text-ink active:bg-bg"
+              className="h-12 rounded-full border border-line px-4 text-[15px] font-medium text-ink active:bg-bg"
             >
               도면 교체
             </button>
           </div>
+
+          {mode === 'edit' && (
+            <div className="flex h-10 shrink-0 items-center justify-start bg-soft px-3 text-[15px] text-navy">
+              방의 꼭짓점을 클릭하여 지정하시오.
+            </div>
+          )}
 
           {/* min-h-0: 세로로 긴 도면 사진이 있으면 flex 자식이 화면보다 커져서 아래쪽 버튼들이 가려질 수 있다. */}
           <div className="relative min-h-0 flex-1">
@@ -273,9 +279,9 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
                 type="button"
                 onClick={startDrawing}
                 aria-label="방 추가"
-                className="absolute bottom-5 right-5 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-2xl text-white shadow-lg active:bg-blue-700"
+                className="absolute bottom-5 right-5 flex h-14 items-center justify-center gap-1 rounded-full bg-room px-5 text-lg font-medium text-white active:opacity-90"
               >
-                +
+                ➕ 방 추가
               </button>
             )}
 
@@ -284,7 +290,7 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
                 <button
                   type="button"
                   onClick={cancelDrawing}
-                  className="h-11 rounded-xl bg-slate-100 px-4 text-sm font-medium text-slate-700 active:bg-slate-200"
+                  className="h-12 rounded-full border border-line bg-white px-4 text-[15px] font-medium text-ink active:bg-bg"
                 >
                   취소
                 </button>
@@ -292,7 +298,7 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
                   type="button"
                   onClick={undoLastPoint}
                   disabled={drawingPoints.length === 0}
-                  className="h-11 flex-1 rounded-xl bg-slate-100 text-sm font-medium text-slate-700 active:bg-slate-200 disabled:opacity-40"
+                  className="h-12 flex-1 rounded-full border border-line bg-white text-[15px] font-medium text-ink active:bg-bg disabled:opacity-40"
                 >
                   되돌리기
                 </button>
@@ -300,7 +306,7 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
                   type="button"
                   onClick={finishDrawing}
                   disabled={drawingPoints.length < 3}
-                  className="h-11 rounded-xl bg-blue-600 px-4 text-sm font-medium text-white active:bg-blue-700 disabled:opacity-40"
+                  className="h-12 rounded-full bg-navy px-4 text-[15px] font-medium text-white active:opacity-80 disabled:opacity-40"
                 >
                   완료
                 </button>
@@ -345,14 +351,14 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
         title="도면 교체"
         options={[
           {
-            label: '촬영',
+            label: CAMERA_LABEL,
             onSelect: () => {
               setReplaceMenuOpen(false);
               fileInputCameraRef.current?.click();
             },
           },
           {
-            label: '갤러리에서 가져오기',
+            label: GALLERY_LABEL,
             onSelect: () => {
               setReplaceMenuOpen(false);
               fileInputGalleryRef.current?.click();

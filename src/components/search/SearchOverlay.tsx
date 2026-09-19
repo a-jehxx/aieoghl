@@ -64,13 +64,13 @@ export function SearchOverlay({ open, houseId, houseName, onClose }: SearchOverl
   }
 
   return (
-    <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex flex-col bg-white">
-      <div className="flex h-14 shrink-0 items-center gap-2 border-b border-slate-200 px-2">
+    <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex flex-col bg-card">
+      <div className="flex h-14 shrink-0 items-center gap-2 border-b border-line px-2">
         <button
           type="button"
           onClick={onClose}
           aria-label="닫기"
-          className="flex h-11 w-11 shrink-0 items-center justify-center text-2xl text-slate-700"
+          className="flex h-12 w-12 shrink-0 items-center justify-center text-2xl text-ink"
         >
           ←
         </button>
@@ -80,13 +80,13 @@ export function SearchOverlay({ open, houseId, houseName, onClose }: SearchOverl
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="물건 이름으로 검색"
-          className="h-11 flex-1 rounded-xl border border-slate-300 px-3 text-base text-slate-900 focus:border-blue-500 focus:outline-none"
+          className="h-12 flex-1 rounded-full border border-line px-4 text-lg text-ink focus:border-navy focus:outline-none"
         />
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">
         {query.trim() === '' && (
-          <p className="mt-8 text-center text-sm text-slate-400">찾고 싶은 물건 이름을 입력해보세요.</p>
+          <p className="mt-8 text-center text-[15px] text-ink-sub">찾고 싶은 물건 이름을 입력해보세요.</p>
         )}
         {query.trim() !== '' && results === null && <Loading label="찾는 중..." />}
         {query.trim() !== '' && results !== null && results.length === 0 && (
@@ -99,9 +99,9 @@ export function SearchOverlay({ open, houseId, houseName, onClose }: SearchOverl
                 <button
                   type="button"
                   onClick={() => handleSelect(r)}
-                  className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 text-left active:bg-slate-50"
+                  className="flex w-full items-center gap-3 rounded-3xl border border-line bg-white p-3 text-left active:bg-bg"
                 >
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-bg">
                     {r.photoUrl ? (
                       <img src={r.photoUrl} alt="" className="h-full w-full object-cover" />
                     ) : (
@@ -109,8 +109,8 @@ export function SearchOverlay({ open, houseId, houseName, onClose }: SearchOverl
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-base font-medium text-slate-900">{r.item.name}</p>
-                    <p className="truncate text-xs text-slate-500">{formatLocationPath(r)}</p>
+                    <p className="truncate text-lg font-medium text-ink">{r.item.name}</p>
+                    <p className="truncate text-[13px] text-ink-sub">{formatLocationPath(r)}</p>
                   </div>
                 </button>
               </li>

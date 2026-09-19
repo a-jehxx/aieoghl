@@ -21,14 +21,14 @@ export function EmojiPickerSheet({ open, onSelect, onCancel }: EmojiPickerSheetP
   return (
     <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex flex-col bg-card">
       <div className="flex h-14 shrink-0 items-center justify-between border-b border-line px-3">
-        <p className="text-lg font-semibold text-ink">이모티콘 선택</p>
+        <p className="text-lg font-bold text-ink">이모티콘 선택</p>
         <button
           type="button"
           onClick={onCancel}
           aria-label="닫기"
-          className="flex h-11 w-11 items-center justify-center text-xl text-ink-sub"
+          className="flex h-12 shrink-0 items-center justify-center rounded-full px-2 text-[15px] text-ink-sub active:bg-bg"
         >
-          ✕
+          닫기 ✕
         </button>
       </div>
       <div className="flex shrink-0 gap-1 overflow-x-auto border-b border-line px-2 py-2">
@@ -37,8 +37,8 @@ export function EmojiPickerSheet({ open, onSelect, onCancel }: EmojiPickerSheetP
             key={c.key}
             type="button"
             onClick={() => setActiveCategory(c.key)}
-            className={`h-10 shrink-0 rounded-full px-4 text-sm font-medium ${
-              c.key === activeCategory ? 'bg-navy text-white' : 'bg-bg text-ink-sub'
+            className={`h-11 shrink-0 rounded-full border px-4 text-[15px] font-medium ${
+              c.key === activeCategory ? 'border-navy bg-soft text-navy' : 'border-line bg-white text-ink-sub'
             }`}
           >
             {c.label}

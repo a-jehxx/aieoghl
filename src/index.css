@@ -2,18 +2,22 @@
 
 /* 디자인 색 이름표. bg-navy / text-ink-sub 처럼 Tailwind 유틸리티로 바로 쓸 수 있다. */
 @theme {
-  --color-navy: #1f2a44;
-  --color-bg: #f3f4f6;
+  --color-navy: #d97b3e;
+  --color-bg: #faf9f7;
   --color-card: #ffffff;
-  --color-line: #e2e5eb;
-  --color-ink: #1b2130;
-  --color-ink-sub: #5b6475;
+  --color-line: #e4e1dc;
+  --color-ink: #2a2622;
+  --color-ink-sub: #6b645c;
   --color-danger: #c8443a;
-  --color-room: #3b82c4;
+  --color-room: #9c72d6;
+  --color-room-selected: #cd5060;
   --color-furniture: #3e9b6b;
-  --color-bin: #e08a2e;
+  --color-bin: #d97b3e;
   --color-guide: #ffd23f;
   --color-guide-edge: #e0a800;
+  --color-soft: #f9eee8;
+  --color-soft-line: #e9b48f;
+  --color-disabled: #ecbd9f;
   --font-sans: Pretendard, 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
 }
 

@@ -34,8 +34,8 @@ export function EmptyState({ title, description, actionLabel, onAction, actions 
           strokeLinejoin="round"
         />
       </svg>
-      <p className="text-base font-semibold text-ink">{title}</p>
-      {description && <p className="text-sm text-ink-sub">{description}</p>}
+      <p className="text-lg font-bold text-ink">{title}</p>
+      {description && <p className="text-[15px] text-ink-sub">{description}</p>}
       {resolvedActions.length > 0 && (
         <div className="mt-2 flex w-full max-w-xs flex-col gap-2">
           {resolvedActions.map((action) => (
@@ -45,8 +45,8 @@ export function EmptyState({ title, description, actionLabel, onAction, actions 
               onClick={action.onClick}
               className={
                 action.primary
-                  ? 'h-11 rounded-[10px] bg-navy px-5 text-base font-medium text-white active:opacity-80'
-                  : 'h-11 rounded-[10px] border border-line bg-white px-5 text-base font-medium text-ink active:bg-bg'
+                  ? 'h-12 rounded-full bg-navy px-5 text-lg font-medium text-white active:opacity-80'
+                  : 'h-12 rounded-full border border-line bg-white px-5 text-lg font-medium text-ink active:bg-bg'
               }
             >
               {action.label}

@@ -8,7 +8,7 @@
 /** 도면 위 방 폴리곤(SVG) */
 export const ROOM_SHAPE = {
   normal: 'fill-room/25 stroke-room',
-  selected: 'fill-room/40 stroke-room',
+  selected: 'fill-room-selected/25 stroke-room-selected',
 } as const;
 
 /** 가구 사진 위 보관함 사각형(SVG) */

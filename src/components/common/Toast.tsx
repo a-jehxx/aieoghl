@@ -18,7 +18,7 @@ export function Toast() {
       <div
         role="status"
         onClick={hide}
-        className="pointer-events-auto max-w-sm rounded-full bg-ink/90 px-4 py-3 text-center text-sm text-white shadow-lg"
+        className="pointer-events-auto max-w-sm rounded-full bg-ink/90 px-5 py-3 text-center text-[15px] text-white"
       >
         {message}
       </div>

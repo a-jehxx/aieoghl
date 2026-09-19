@@ -10,6 +10,7 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { SelectedItemBar } from '@/components/common/SelectedItemBar';
 import { ModeToggle } from '@/components/common/ModeToggle';
 import { PhotoCanvas } from '@/components/photo/PhotoCanvas';
+import { BIN_SHAPE } from '@/styles/entity';
 
 interface FurnitureScreenProps {
   furnitureId: string;
@@ -218,7 +219,7 @@ export function FurnitureScreen({ furnitureId }: FurnitureScreenProps) {
 
   if (!furniture || !photoUrl) {
     return (
-      <div className="flex h-full items-center justify-center px-6 text-center text-sm text-slate-500">
+      <div className="flex h-full items-center justify-center px-6 text-center text-[15px] text-ink-sub">
         가구 사진을 찾을 수 없어요.
       </div>
     );
@@ -263,8 +264,8 @@ export function FurnitureScreen({ furnitureId }: FurnitureScreenProps) {
                         blinking
                           ? 'hsm-blink-shape'
                           : isSelected
-                            ? 'fill-orange-500/40 stroke-orange-700'
-                            : 'fill-orange-500/25 stroke-orange-600'
+                            ? BIN_SHAPE.selected
+                            : BIN_SHAPE.normal
                       }
                       strokeWidth={0.6}
                     />
@@ -280,7 +281,7 @@ export function FurnitureScreen({ furnitureId }: FurnitureScreenProps) {
                               cx={hx * 100}
                               cy={hy * 100}
                               r={2}
-                              className="fill-white stroke-orange-700"
+                              className="fill-white stroke-bin"
                               strokeWidth={0.6}
                             />
                           );
@@ -299,9 +300,9 @@ export function FurnitureScreen({ furnitureId }: FurnitureScreenProps) {
             type="button"
             onClick={() => setDialog({ type: 'nameNewBin' })}
             aria-label="보관함 추가"
-            className="absolute bottom-5 right-5 flex h-14 w-14 items-center justify-center rounded-full bg-orange-600 text-2xl text-white shadow-lg active:bg-orange-700"
+            className="absolute bottom-5 right-5 flex h-14 items-center justify-center gap-1 rounded-full bg-bin px-5 text-lg font-medium text-white active:opacity-90"
           >
-            +
+            ➕ 보관함 추가
           </button>
         )}
 

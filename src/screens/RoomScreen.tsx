@@ -5,7 +5,7 @@ import { useNavigationStore } from '@/store/navigationStore';
 import { useToastStore } from '@/store/toastStore';
 import { useGuideStore } from '@/store/guideStore';
 import { Loading } from '@/components/common/Loading';
-import { ActionSheet } from '@/components/common/ActionSheet';
+import { ActionSheet, CAMERA_LABEL, GALLERY_LABEL } from '@/components/common/ActionSheet';
 import { PromptDialog } from '@/components/common/PromptDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { FurnitureCard } from '@/components/room/FurnitureCard';
@@ -175,7 +175,7 @@ export function RoomScreen({ roomId }: RoomScreenProps) {
       <div ref={containerRef} className="h-full w-full overflow-x-hidden overflow-y-auto bg-white">
         <div className="relative w-full" style={{ height: canvasHeightPx, ...GRID_BACKGROUND }}>
           {furnitureList.length === 0 && (
-            <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-10 text-center text-sm text-slate-400">
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-10 text-center text-[15px] text-ink-sub">
               아직 배치된 가구가 없어요. 오른쪽 아래 + 버튼으로 가구를 추가해보세요.
             </div>
           )}
@@ -200,9 +200,9 @@ export function RoomScreen({ roomId }: RoomScreenProps) {
         type="button"
         onClick={() => setAddDialog({ type: 'choosePhotoSource' })}
         aria-label="가구 추가"
-        className="absolute bottom-5 right-5 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-2xl text-white shadow-lg active:bg-emerald-700"
+        className="absolute bottom-5 right-5 flex h-14 items-center justify-center gap-1 rounded-full bg-furniture px-5 text-lg font-medium text-white active:opacity-90"
       >
-        +
+        ➕ 가구 추가
       </button>
 
       <input
@@ -231,8 +231,8 @@ export function RoomScreen({ roomId }: RoomScreenProps) {
         open={addDialog.type === 'choosePhotoSource'}
         title="가구 사진"
         options={[
-          { label: '촬영', onSelect: () => cameraInputRef.current?.click() },
-          { label: '갤러리에서 가져오기', onSelect: () => galleryInputRef.current?.click() },
+          { label: CAMERA_LABEL, onSelect: () => cameraInputRef.current?.click() },
+          { label: GALLERY_LABEL, onSelect: () => galleryInputRef.current?.click() },
         ]}
         onCancel={() => setAddDialog({ type: 'none' })}
       />
@@ -261,7 +261,7 @@ export function RoomScreen({ roomId }: RoomScreenProps) {
               setItemDialog({ type: 'choosePhotoSource', furniture: itemDialog.furniture }),
           },
           {
-            label: '삭제',
+            label: '🗑️ 삭제',
             destructive: true,
             onSelect: () =>
               itemDialog.type === 'menu' && setItemDialog({ type: 'delete', furniture: itemDialog.furniture }),
@@ -281,8 +281,8 @@ export function RoomScreen({ roomId }: RoomScreenProps) {
         open={itemDialog.type === 'choosePhotoSource'}
         title="사진 선택"
         options={[
-          { label: '촬영', onSelect: () => cameraInputRef.current?.click() },
-          { label: '갤러리에서 가져오기', onSelect: () => galleryInputRef.current?.click() },
+          { label: CAMERA_LABEL, onSelect: () => cameraInputRef.current?.click() },
+          { label: GALLERY_LABEL, onSelect: () => galleryInputRef.current?.click() },
         ]}
         onCancel={() => setItemDialog({ type: 'none' })}
       />

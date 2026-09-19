@@ -5,7 +5,7 @@ import { useToastStore } from '@/store/toastStore';
 import { useGuideStore } from '@/store/guideStore';
 import { Loading } from '@/components/common/Loading';
 import { EmptyState } from '@/components/common/EmptyState';
-import { ActionSheet } from '@/components/common/ActionSheet';
+import { ActionSheet, CAMERA_LABEL, GALLERY_LABEL } from '@/components/common/ActionSheet';
 import { PromptDialog } from '@/components/common/PromptDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { EmojiPickerSheet } from '@/components/common/EmojiPickerSheet';
@@ -137,9 +137,9 @@ export function BinScreen({ binId }: BinScreenProps) {
       <button
         type="button"
         onClick={() => setAddDialog({ type: 'chooseType' })}
-        className="mb-3 flex h-14 w-full items-center justify-center rounded-xl border-2 border-dashed border-slate-300 text-base font-medium text-slate-500 active:bg-slate-100"
+        className="mb-3 flex h-14 w-full items-center justify-center rounded-full border-2 border-dashed border-soft-line text-lg font-medium text-ink-sub active:bg-soft"
       >
-        + 물건 추가
+        ➕ 물건 추가
       </button>
 
       {items.length === 0 ? (
@@ -153,18 +153,18 @@ export function BinScreen({ binId }: BinScreenProps) {
               key={item.id}
               type="button"
               onClick={() => setEditDialog({ type: 'panel', item })}
-              className={`flex flex-col items-center gap-1.5 rounded-xl border p-2 shadow-sm active:bg-slate-50 ${
-                blinking ? 'hsm-blink-card' : 'border-slate-200 bg-white'
+              className={`flex flex-col items-center gap-1.5 rounded-3xl border p-2 active:bg-bg ${
+                blinking ? 'hsm-blink-card' : 'border-line bg-white'
               }`}
             >
-              <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg bg-slate-100">
+              <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg bg-bg">
                 {item.photoId && photoUrls[item.id] ? (
                   <img src={photoUrls[item.id]!} alt="" className="h-full w-full object-cover" />
                 ) : (
                   <span className="text-3xl">{item.emoji ?? '📦'}</span>
                 )}
               </div>
-              <p className="w-full truncate text-center text-xs font-medium text-slate-900">{item.name}</p>
+              <p className="w-full truncate text-center text-[13px] font-medium text-ink">{item.name}</p>
             </button>
             );
           })}
@@ -206,8 +206,8 @@ export function BinScreen({ binId }: BinScreenProps) {
         open={addDialog.type === 'choosePhotoSource'}
         title="사진 선택"
         options={[
-          { label: '촬영', onSelect: () => cameraInputRef.current?.click() },
-          { label: '갤러리에서 가져오기', onSelect: () => galleryInputRef.current?.click() },
+          { label: CAMERA_LABEL, onSelect: () => cameraInputRef.current?.click() },
+          { label: GALLERY_LABEL, onSelect: () => galleryInputRef.current?.click() },
         ]}
         onCancel={() => setAddDialog({ type: 'none' })}
       />
@@ -231,52 +231,52 @@ export function BinScreen({ binId }: BinScreenProps) {
           aria-modal="true"
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center"
         >
-          <div className="w-full max-w-sm rounded-t-2xl bg-white p-5 sm:rounded-2xl">
+          <div className="w-full max-w-sm rounded-t-[32px] bg-card p-5 sm:rounded-[32px]">
             <div className="flex flex-col items-center gap-2">
-              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl bg-slate-100">
+              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl bg-bg">
                 {editDialog.item.photoId && photoUrls[editDialog.item.id] ? (
                   <img src={photoUrls[editDialog.item.id]!} alt="" className="h-full w-full object-cover" />
                 ) : (
                   <span className="text-4xl">{editDialog.item.emoji ?? '📦'}</span>
                 )}
               </div>
-              <p className="text-lg font-semibold text-slate-900">{editDialog.item.name}</p>
+              <p className="text-lg font-bold text-ink">{editDialog.item.name}</p>
             </div>
             <div className="mt-4 flex flex-col gap-2">
               <button
                 type="button"
                 onClick={() => setEditDialog({ type: 'rename', item: editDialog.item })}
-                className="h-12 rounded-xl bg-slate-100 text-base font-medium text-slate-900 active:bg-slate-200"
+                className="h-12 rounded-full border border-line bg-white text-lg font-medium text-ink active:bg-bg"
               >
                 이름 변경
               </button>
               <button
                 type="button"
                 onClick={() => setEditDialog({ type: 'choosePhotoSource', item: editDialog.item })}
-                className="h-12 rounded-xl bg-slate-100 text-base font-medium text-slate-900 active:bg-slate-200"
+                className="h-12 rounded-full border border-line bg-white text-lg font-medium text-ink active:bg-bg"
               >
                 사진으로 바꾸기
               </button>
               <button
                 type="button"
                 onClick={() => setEditDialog({ type: 'chooseEmoji', item: editDialog.item })}
-                className="h-12 rounded-xl bg-slate-100 text-base font-medium text-slate-900 active:bg-slate-200"
+                className="h-12 rounded-full border border-line bg-white text-lg font-medium text-ink active:bg-bg"
               >
                 이모티콘으로 바꾸기
               </button>
               <button
                 type="button"
                 onClick={() => setEditDialog({ type: 'delete', item: editDialog.item })}
-                className="h-12 rounded-xl bg-red-50 text-base font-medium text-red-600 active:bg-red-100"
+                className="h-12 rounded-full border border-danger/30 bg-white text-lg font-medium text-danger active:bg-danger/10"
               >
-                삭제
+                🗑️ 삭제
               </button>
               <button
                 type="button"
                 onClick={() => setEditDialog({ type: 'none' })}
-                className="mt-1 h-12 rounded-xl bg-slate-900 text-base font-medium text-white active:opacity-80"
+                className="mt-1 h-12 rounded-full bg-navy text-lg font-medium text-white active:opacity-80"
               >
-                닫기
+                닫기 ✕
               </button>
             </div>
           </div>
@@ -295,8 +295,8 @@ export function BinScreen({ binId }: BinScreenProps) {
         open={editDialog.type === 'choosePhotoSource'}
         title="사진 선택"
         options={[
-          { label: '촬영', onSelect: () => cameraInputRef.current?.click() },
-          { label: '갤러리에서 가져오기', onSelect: () => galleryInputRef.current?.click() },
+          { label: CAMERA_LABEL, onSelect: () => cameraInputRef.current?.click() },
+          { label: GALLERY_LABEL, onSelect: () => galleryInputRef.current?.click() },
         ]}
         onCancel={() => setEditDialog({ type: 'none' })}
       />

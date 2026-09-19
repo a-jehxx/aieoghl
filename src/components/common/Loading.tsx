@@ -15,7 +15,7 @@ export function Loading({ label = '불러오는 중...' }: LoadingProps) {
           className="opacity-75"
         />
       </svg>
-      <p className="text-sm text-ink-sub">{label}</p>
+      <p className="text-[15px] text-ink-sub">{label}</p>
     </div>
   );
 }

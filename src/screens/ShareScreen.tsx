@@ -101,14 +101,14 @@ export function ShareScreen({ houseId }: ShareScreenProps) {
   return (
     <div className="flex h-full flex-col overflow-y-auto p-4">
       {house.shareCode ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-5 text-center shadow-sm">
-          <p className="text-sm text-slate-500">가족 코드</p>
-          <p className="mt-2 text-3xl font-bold tracking-[0.2em] text-slate-900">{house.shareCode}</p>
+        <div className="rounded-3xl border border-line bg-white p-5 text-center">
+          <p className="text-[15px] text-ink-sub">가족 코드</p>
+          <p className="mt-2 text-3xl font-bold tracking-[0.2em] text-ink">{house.shareCode}</p>
           <div className="mt-4 flex gap-2">
             <button
               type="button"
               onClick={handleCopy}
-              className="h-11 flex-1 rounded-xl bg-blue-600 text-base font-medium text-white active:bg-blue-700"
+              className="h-12 flex-1 rounded-full bg-navy text-lg font-medium text-white active:opacity-80"
             >
               복사하기
             </button>
@@ -116,7 +116,7 @@ export function ShareScreen({ houseId }: ShareScreenProps) {
               <button
                 type="button"
                 onClick={handleShare}
-                className="h-11 flex-1 rounded-xl bg-slate-100 text-base font-medium text-slate-700 active:bg-slate-200"
+                className="h-12 flex-1 rounded-full border border-line bg-white text-lg font-medium text-ink active:bg-bg"
               >
                 공유하기
               </button>
@@ -127,21 +127,21 @@ export function ShareScreen({ houseId }: ShareScreenProps) {
               type="button"
               onClick={handleCreateOrRegenerate}
               disabled={busy}
-              className="mt-3 h-11 w-full rounded-xl bg-slate-100 text-base font-medium text-slate-700 active:bg-slate-200 disabled:opacity-50"
+              className="mt-3 h-12 w-full rounded-full border border-line bg-white text-lg font-medium text-ink active:bg-bg disabled:opacity-50"
             >
               코드 재발급
             </button>
           )}
         </div>
       ) : (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-5 text-center">
-          <p className="text-sm text-slate-500">아직 가족과 공유하고 있지 않아요.</p>
+        <div className="rounded-3xl border border-dashed border-soft-line bg-white p-5 text-center">
+          <p className="text-[15px] text-ink-sub">아직 가족과 공유하고 있지 않아요.</p>
           {isOwner && (
             <button
               type="button"
               onClick={handleCreateOrRegenerate}
               disabled={busy}
-              className="mt-3 h-12 w-full rounded-xl bg-blue-600 text-base font-medium text-white active:bg-blue-700 disabled:opacity-50"
+              className="mt-3 h-12 w-full rounded-full bg-navy text-lg font-medium text-white active:opacity-80 disabled:opacity-50"
             >
               공유 시작하기
             </button>
@@ -149,14 +149,14 @@ export function ShareScreen({ houseId }: ShareScreenProps) {
         </div>
       )}
 
-      <p className="mt-4 text-center text-xs text-slate-400">
+      <p className="mt-4 text-center text-[13px] text-ink-sub">
         앱 데이터를 지우거나 폰을 바꾸면 코드로 다시 참여해야 해요.
       </p>
 
       <button
         type="button"
         onClick={() => setDialog({ type: 'confirmStop' })}
-        className="mt-6 h-12 rounded-xl bg-red-50 text-base font-medium text-red-600 active:bg-red-100"
+        className="mt-6 h-12 rounded-full border border-danger/30 bg-white text-lg font-medium text-danger active:bg-danger/10"
       >
         {isOwner ? '공유 중지' : '집에서 나가기'}
       </button>

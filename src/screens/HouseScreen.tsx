@@ -76,41 +76,41 @@ export function HouseScreen({ houseId, houseName }: HouseScreenProps) {
       <button
         type="button"
         onClick={() => setDialog({ type: 'create' })}
-        className="mb-3 flex h-14 w-full items-center justify-center rounded-xl border-2 border-dashed border-slate-300 text-base font-medium text-slate-500 active:bg-slate-100"
+        className="mb-3 flex h-14 w-full items-center justify-center rounded-full border-2 border-dashed border-soft-line text-lg font-medium text-ink-sub active:bg-soft"
       >
-        + 층 추가
+        ➕ 층 추가
       </button>
 
       <ul className="flex flex-col gap-2">
         {floors.map((floor) => (
           <li
             key={floor.id}
-            className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white pr-1 shadow-sm"
+            className="flex flex-col rounded-3xl border border-line bg-white"
           >
             <button
               type="button"
               onClick={() => openFloor(floor)}
-              className="flex h-16 flex-1 items-center px-4 text-left text-base font-medium text-slate-900 active:bg-slate-50"
+              className="flex h-16 flex-1 items-center px-4 text-left text-lg font-medium text-ink active:bg-bg"
             >
               {floor.name}
             </button>
-            <button
-              type="button"
-              aria-label="이름 수정"
-              onClick={() => setDialog({ type: 'rename', floor })}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg active:bg-slate-100"
-            >
-              ✏️
-            </button>
-            <button
-              type="button"
-              aria-label="삭제"
-              disabled={!canDelete}
-              onClick={() => setDialog({ type: 'delete', floor })}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg active:bg-slate-100 disabled:opacity-30"
-            >
-              🗑
-            </button>
+            <div className="flex items-center gap-1 border-t border-line px-2 py-1">
+              <button
+                type="button"
+                onClick={() => setDialog({ type: 'rename', floor })}
+                className="flex h-12 flex-1 items-center justify-center rounded-full text-[15px] font-medium text-ink active:bg-bg"
+              >
+                ✏️ 수정
+              </button>
+              <button
+                type="button"
+                disabled={!canDelete}
+                onClick={() => setDialog({ type: 'delete', floor })}
+                className="flex h-12 flex-1 items-center justify-center rounded-full text-[15px] font-medium text-danger active:bg-danger/10 disabled:opacity-30"
+              >
+                🗑️ 삭제
+              </button>
+            </div>
           </li>
         ))}
       </ul>

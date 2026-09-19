@@ -66,36 +66,36 @@ export function InstallBanner() {
     <div className="border-t border-line bg-card p-4">
       {promptEvent ? (
         <>
-          <p className="text-sm font-medium text-ink">앱처럼 설치해서 쓰시겠어요?</p>
+          <p className="text-[15px] font-medium text-ink">앱처럼 설치해서 쓰시겠어요?</p>
           <div className="mt-2 flex gap-2">
             <button
               type="button"
               onClick={handleInstall}
-              className="h-11 flex-1 rounded-[10px] bg-navy text-sm font-medium text-white active:opacity-80"
+              className="h-12 flex-1 rounded-full bg-navy text-[15px] font-medium text-white active:opacity-80"
             >
               설치하기
             </button>
             <button
               type="button"
               onClick={handleDismiss}
-              className="h-11 flex-1 rounded-[10px] border border-line bg-white text-sm font-medium text-ink active:bg-bg"
+              className="h-12 flex-1 rounded-full border border-line bg-white text-[15px] font-medium text-ink active:bg-bg"
             >
-              닫기
+              닫기 ✕
             </button>
           </div>
         </>
       ) : (
         <div className="flex items-center gap-2">
-          <p className="flex-1 text-xs text-ink-sub">
+          <p className="flex-1 text-[13px] text-ink-sub">
             앱처럼 설치하려면 Chrome 메뉴(⋮) → 홈 화면에 추가를 눌러주세요.
           </p>
           <button
             type="button"
             onClick={handleDismiss}
             aria-label="닫기"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-sub active:bg-bg"
+            className="flex h-12 shrink-0 items-center justify-center rounded-full px-2 text-[15px] text-ink-sub active:bg-bg"
           >
-            ✕
+            닫기 ✕
           </button>
         </div>
       )}

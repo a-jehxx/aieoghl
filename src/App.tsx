@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Search, Folder, Users } from 'lucide-react';
 import { useNavigationStore, type Screen } from '@/store/navigationStore';
 import { useGuideStore } from '@/store/guideStore';
 import { useDemoStore } from '@/store/demoStore';
@@ -23,7 +22,7 @@ import { ShareScreen } from '@/screens/ShareScreen';
 function getScreenTitle(screen: Screen): string {
   switch (screen.type) {
     case 'main':
-      return 'HSM';
+      return '우리집 수납정리';
     case 'house':
       return screen.name;
     case 'floor':
@@ -116,9 +115,9 @@ export default function App() {
           type="button"
           onClick={() => setSearchOpen(true)}
           aria-label="검색"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white active:bg-white/10"
+          className="flex h-12 shrink-0 items-center justify-center rounded-full px-3 text-lg font-medium text-ink active:bg-bg"
         >
-          <Search size={22} strokeWidth={2} />
+          🔍 검색
         </button>
       )}
       {current.type === 'floor' && (
@@ -126,9 +125,9 @@ export default function App() {
           type="button"
           onClick={() => push({ type: 'house', houseId: current.houseId, name: current.houseName })}
           aria-label="층 관리"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white active:bg-white/10"
+          className="flex h-12 shrink-0 items-center justify-center rounded-full px-3 text-lg font-medium text-ink active:bg-bg"
         >
-          <Folder size={22} strokeWidth={2} />
+          층
         </button>
       )}
       {current.type === 'house' && (
@@ -136,9 +135,9 @@ export default function App() {
           type="button"
           onClick={() => push({ type: 'share', houseId: current.houseId, houseName: current.name })}
           aria-label="가족 공유"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white active:bg-white/10"
+          className="flex h-12 shrink-0 items-center justify-center rounded-full px-3 text-lg font-medium text-ink active:bg-bg"
         >
-          <Users size={22} strokeWidth={2} />
+          가족 공유
         </button>
       )}
     </>

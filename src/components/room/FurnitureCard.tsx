@@ -1,5 +1,6 @@
 import { useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
 import type { Furniture } from '@/types';
+import { FURNITURE_CARD } from '@/styles/entity';
 
 const LONG_PRESS_MS = 800;
 const MOVE_THRESHOLD = 8;
@@ -120,8 +121,8 @@ export function FurnitureCard({
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
       onContextMenu={(e) => e.preventDefault()}
-      className={`absolute flex w-24 touch-none select-none flex-col items-center rounded-xl border-2 p-1.5 shadow-sm ${
-        blinking ? 'hsm-blink-card' : 'border-emerald-500 bg-emerald-50'
+      className={`absolute flex w-24 touch-none select-none flex-col items-center rounded-3xl border-2 p-1.5 ${
+        blinking ? 'hsm-blink-card' : FURNITURE_CARD.normal
       }`}
     >
       <div className="flex h-16 w-full items-center justify-center overflow-hidden rounded-lg bg-white">
@@ -136,7 +137,7 @@ export function FurnitureCard({
           <span className="text-2xl">🪑</span>
         )}
       </div>
-      <p className="mt-1 w-full truncate text-center text-xs font-medium text-emerald-900">{furniture.name}</p>
+      <p className="mt-1 w-full truncate text-center text-[13px] font-medium text-ink">{furniture.name}</p>
     </div>
   );
 }

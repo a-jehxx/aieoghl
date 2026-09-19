@@ -9,12 +9,12 @@ interface ModeToggleProps {
 
 export function ModeToggle({ mode, onChange }: ModeToggleProps) {
   return (
-    <div className="flex overflow-hidden rounded-[10px] border border-line">
+    <div className="flex gap-2">
       <button
         type="button"
         onClick={() => onChange('view')}
-        className={`h-11 px-3 text-sm font-medium ${
-          mode === 'view' ? 'bg-navy text-white' : 'bg-white text-ink-sub'
+        className={`flex h-12 items-center justify-center rounded-full border px-4 text-lg font-medium ${
+          mode === 'view' ? 'border-navy bg-soft text-navy' : 'border-line bg-white text-ink-sub'
         }`}
       >
         보기
@@ -22,8 +22,8 @@ export function ModeToggle({ mode, onChange }: ModeToggleProps) {
       <button
         type="button"
         onClick={() => onChange('edit')}
-        className={`h-11 px-3 text-sm font-medium ${
-          mode === 'edit' ? 'bg-navy text-white' : 'bg-white text-ink-sub'
+        className={`flex h-12 items-center justify-center rounded-full border px-4 text-lg font-medium ${
+          mode === 'edit' ? 'border-navy bg-soft text-navy' : 'border-line bg-white text-ink-sub'
         }`}
       >
         편집
