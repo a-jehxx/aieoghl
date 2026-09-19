@@ -238,7 +238,8 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
             </button>
           </div>
 
-          <div className="relative flex-1">
+          {/* min-h-0: 세로로 긴 도면 사진이 있으면 flex 자식이 화면보다 커져서 아래쪽 버튼들이 가려질 수 있다. */}
+          <div className="relative min-h-0 flex-1">
             <PhotoCanvas
               imageUrl={photoUrl}
               resetKey={floorId}

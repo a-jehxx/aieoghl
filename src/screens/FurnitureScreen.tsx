@@ -253,7 +253,9 @@ export function FurnitureScreen({ furnitureId }: FurnitureScreenProps) {
         </div>
       </div>
 
-      <div className="relative flex-1">
+      {/* min-h-0: flex 자식은 기본적으로 내용(세로로 긴 사진)만큼 커지려 해서 화면보다 커질 수 있다.
+          이게 없으면 사진이 길 때 이 영역이 뷰포트를 넘어가 아래쪽 + 버튼이 화면 밖으로 밀려난다. */}
+      <div className="relative min-h-0 flex-1">
         <PhotoCanvas
           imageUrl={photoUrl}
           resetKey={furnitureId}

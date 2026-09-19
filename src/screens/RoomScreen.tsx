@@ -21,6 +21,7 @@ type ItemDialogState =
   | { type: 'none' }
   | { type: 'menu'; furniture: Furniture }
   | { type: 'rename'; furniture: Furniture }
+  | { type: 'choosePhotoSource'; furniture: Furniture }
   | { type: 'delete'; furniture: Furniture };
 
 const GRID_BACKGROUND: CSSProperties = {
@@ -107,11 +108,22 @@ export function RoomScreen({ roomId }: RoomScreenProps) {
     if (!file) return;
     try {
       const dataUrl = await compressImage(file, FURNITURE_IMAGE_OPTIONS);
+      if (itemDialog.type === 'choosePhotoSource') {
+        const furniture = itemDialog.furniture;
+        const photo = await repository.savePhoto(dataUrl);
+        const oldPhotoId = furniture.photoId;
+        await repository.updateFurniture(furniture.id, { photoId: photo.id });
+        if (oldPhotoId) await repository.removePhoto(oldPhotoId);
+        setItemDialog({ type: 'none' });
+        await refresh();
+        return;
+      }
       const photo = await repository.savePhoto(dataUrl);
       setAddDialog({ type: 'name', photoId: photo.id });
     } catch {
       showToast('사진을 처리하지 못했어요. 다시 시도해주세요.');
       setAddDialog({ type: 'none' });
+      setItemDialog({ type: 'none' });
     }
   }
 
@@ -240,6 +252,12 @@ export function RoomScreen({ roomId }: RoomScreenProps) {
               itemDialog.type === 'menu' && setItemDialog({ type: 'rename', furniture: itemDialog.furniture }),
           },
           {
+            label: '사진 변경',
+            onSelect: () =>
+              itemDialog.type === 'menu' &&
+              setItemDialog({ type: 'choosePhotoSource', furniture: itemDialog.furniture }),
+          },
+          {
             label: '삭제',
             destructive: true,
             onSelect: () =>
@@ -254,6 +272,15 @@ export function RoomScreen({ roomId }: RoomScreenProps) {
         initialValue={itemDialog.type === 'rename' ? itemDialog.furniture.name : ''}
         confirmLabel="저장"
         onConfirm={(name) => itemDialog.type === 'rename' && handleRename(itemDialog.furniture, name)}
+        onCancel={() => setItemDialog({ type: 'none' })}
+      />
+      <ActionSheet
+        open={itemDialog.type === 'choosePhotoSource'}
+        title="사진 선택"
+        options={[
+          { label: '촬영', onSelect: () => cameraInputRef.current?.click() },
+          { label: '갤러리에서 가져오기', onSelect: () => galleryInputRef.current?.click() },
+        ]}
         onCancel={() => setItemDialog({ type: 'none' })}
       />
       <ConfirmDialog
