@@ -43,12 +43,10 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
   const fileInputCameraRef = useRef<HTMLInputElement>(null);
   const fileInputGalleryRef = useRef<HTMLInputElement>(null);
 
-  async function loadAll() {
+  async function loadFloorAndPhoto() {
     setLoading(true);
     const f = await repository.getFloor(floorId);
     setFloor(f ?? null);
-    const roomList = await repository.listRooms(floorId);
-    setRooms(roomList);
     if (f?.planPhotoId) {
       const photo = await repository.getPhoto(f.planPhotoId);
       setPhotoUrl(photo?.dataUrl ?? null);
@@ -62,8 +60,13 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
     setMode('view');
     setDrawingPoints(null);
     setSelectedRoomId(null);
-    loadAll();
+    loadFloorAndPhoto();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [floorId]);
+
+  useEffect(() => {
+    const unsubscribe = repository.subscribeRooms(floorId, setRooms);
+    return unsubscribe;
   }, [floorId]);
 
   function setModeTo(target: Mode) {
@@ -78,11 +81,11 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
     try {
       setUploading(true);
       const dataUrl = await compressImage(file, PLAN_IMAGE_OPTIONS);
-      const photo = await repository.savePhoto(dataUrl);
+      const photo = await repository.savePhoto(floorId, dataUrl);
       const oldPhotoId = floor.planPhotoId;
       await repository.updateFloor(floor.id, { planPhotoId: photo.id });
       if (oldPhotoId) await repository.removePhoto(oldPhotoId);
-      await loadAll();
+      await loadFloorAndPhoto();
     } catch {
       showToast('사진을 불러오지 못했어요. 다시 시도해주세요.');
     } finally {
@@ -114,8 +117,6 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
       await repository.createRoom({ floorId, name, points: drawingPoints });
       setDrawingPoints(null);
       setDialog({ type: 'none' });
-      const roomList = await repository.listRooms(floorId);
-      setRooms(roomList);
     } catch {
       showToast('방을 추가하지 못했어요. 다시 시도해주세요.');
     }
@@ -126,8 +127,6 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
       await repository.updateRoom(room.id, { name });
       setDialog({ type: 'none' });
       setSelectedRoomId(null);
-      const roomList = await repository.listRooms(floorId);
-      setRooms(roomList);
     } catch {
       showToast('이름을 바꾸지 못했어요. 다시 시도해주세요.');
     }
@@ -139,8 +138,6 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
       setDialog({ type: 'none' });
       setSelectedRoomId(null);
       showToast('방을 삭제했어요.');
-      const roomList = await repository.listRooms(floorId);
-      setRooms(roomList);
     } catch {
       showToast('삭제하지 못했어요. 다시 시도해주세요.');
     }

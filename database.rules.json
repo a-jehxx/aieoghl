@@ -1,0 +1,22 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+    "houses": {
+      "$houseId": {
+        "rooms": {
+          ".indexOn": ["floorId"]
+        },
+        "furniture": {
+          ".indexOn": ["roomId"]
+        },
+        "bins": {
+          ".indexOn": ["furnitureId"]
+        },
+        "items": {
+          ".indexOn": ["binId"]
+        }
+      }
+    }
+  }
+}

@@ -24,15 +24,12 @@ export function HouseScreen({ houseId, houseName }: HouseScreenProps) {
   const push = useNavigationStore((s) => s.push);
   const showToast = useToastStore((s) => s.show);
 
-  async function refresh() {
-    const list = await repository.listFloors(houseId);
-    list.sort((a, b) => a.order - b.order);
-    setFloors(list);
-  }
-
   useEffect(() => {
-    refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const unsubscribe = repository.subscribeFloors(houseId, (list) => {
+      const sorted = [...list].sort((a, b) => a.order - b.order);
+      setFloors(sorted);
+    });
+    return unsubscribe;
   }, [houseId]);
 
   function openFloor(floor: Floor) {
@@ -44,7 +41,6 @@ export function HouseScreen({ houseId, houseName }: HouseScreenProps) {
       const order = floors?.length ?? 0;
       await repository.createFloor({ houseId, name, order, planPhotoId: null });
       setDialog({ type: 'none' });
-      await refresh();
     } catch {
       showToast('층을 만들지 못했어요. 다시 시도해주세요.');
     }
@@ -54,7 +50,6 @@ export function HouseScreen({ houseId, houseName }: HouseScreenProps) {
     try {
       await repository.updateFloor(floor.id, { name });
       setDialog({ type: 'none' });
-      await refresh();
     } catch {
       showToast('이름을 바꾸지 못했어요. 다시 시도해주세요.');
     }
@@ -65,7 +60,6 @@ export function HouseScreen({ houseId, houseName }: HouseScreenProps) {
       await repository.removeFloor(floor.id);
       setDialog({ type: 'none' });
       showToast('층을 삭제했어요.');
-      await refresh();
     } catch {
       showToast('삭제하지 못했어요. 다시 시도해주세요.');
     }

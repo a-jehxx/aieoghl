@@ -75,24 +75,30 @@ export function RoomScreen({ roomId }: RoomScreenProps) {
     if (containerRef.current) setViewportHeight(containerRef.current.clientHeight);
   }, [furnitureList]);
 
-  async function refresh() {
-    const list = await repository.listFurniture(roomId);
-    setFurnitureList(list);
-    const entries = await Promise.all(
-      list.map(async (f) => {
-        if (!f.photoId) return [f.id, null] as const;
-        const photo = await repository.getPhoto(f.photoId);
-        return [f.id, photo?.dataUrl ?? null] as const;
-      }),
-    );
-    setPhotoUrls(Object.fromEntries(entries));
-  }
-
   useEffect(() => {
     setFurnitureList(null);
-    refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const unsubscribe = repository.subscribeFurniture(roomId, setFurnitureList);
+    return unsubscribe;
   }, [roomId]);
+
+  // 사진은 구독하지 않는다 — 가구 목록이 바뀔 때마다 필요한 사진만 불러온다(repository가 세션 캐시함).
+  useEffect(() => {
+    if (!furnitureList) return;
+    let active = true;
+    (async () => {
+      const entries = await Promise.all(
+        furnitureList.map(async (f) => {
+          if (!f.photoId) return [f.id, null] as const;
+          const photo = await repository.getPhoto(f.photoId);
+          return [f.id, photo?.dataUrl ?? null] as const;
+        }),
+      );
+      if (active) setPhotoUrls(Object.fromEntries(entries));
+    })();
+    return () => {
+      active = false;
+    };
+  }, [furnitureList]);
 
   async function handleDragEnd(id: string, x: number, y: number) {
     setFurnitureList((list) => list?.map((f) => (f.id === id ? { ...f, x, y } : f)) ?? list);
@@ -100,7 +106,8 @@ export function RoomScreen({ roomId }: RoomScreenProps) {
       await repository.updateFurniture(id, { x, y });
     } catch {
       showToast('위치를 저장하지 못했어요.');
-      await refresh();
+      const list = await repository.listFurniture(roomId);
+      setFurnitureList(list);
     }
   }
 
@@ -110,15 +117,14 @@ export function RoomScreen({ roomId }: RoomScreenProps) {
       const dataUrl = await compressImage(file, FURNITURE_IMAGE_OPTIONS);
       if (itemDialog.type === 'choosePhotoSource') {
         const furniture = itemDialog.furniture;
-        const photo = await repository.savePhoto(dataUrl);
+        const photo = await repository.savePhoto(roomId, dataUrl);
         const oldPhotoId = furniture.photoId;
         await repository.updateFurniture(furniture.id, { photoId: photo.id });
         if (oldPhotoId) await repository.removePhoto(oldPhotoId);
         setItemDialog({ type: 'none' });
-        await refresh();
         return;
       }
-      const photo = await repository.savePhoto(dataUrl);
+      const photo = await repository.savePhoto(roomId, dataUrl);
       setAddDialog({ type: 'name', photoId: photo.id });
     } catch {
       showToast('사진을 처리하지 못했어요. 다시 시도해주세요.');
@@ -133,7 +139,6 @@ export function RoomScreen({ roomId }: RoomScreenProps) {
       const { x, y } = nextFurniturePosition(furnitureList?.length ?? 0, containerRef.current?.clientWidth ?? 390);
       await repository.createFurniture({ roomId, name, photoId: addDialog.photoId, x, y });
       setAddDialog({ type: 'none' });
-      await refresh();
     } catch {
       showToast('가구를 추가하지 못했어요. 다시 시도해주세요.');
     }
@@ -143,7 +148,6 @@ export function RoomScreen({ roomId }: RoomScreenProps) {
     try {
       await repository.updateFurniture(furniture.id, { name });
       setItemDialog({ type: 'none' });
-      await refresh();
     } catch {
       showToast('이름을 바꾸지 못했어요. 다시 시도해주세요.');
     }
@@ -154,7 +158,6 @@ export function RoomScreen({ roomId }: RoomScreenProps) {
       await repository.removeFurniture(furniture.id);
       setItemDialog({ type: 'none' });
       showToast('가구를 삭제했어요.');
-      await refresh();
     } catch {
       showToast('삭제하지 못했어요. 다시 시도해주세요.');
     }

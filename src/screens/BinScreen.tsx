@@ -41,40 +41,45 @@ export function BinScreen({ binId }: BinScreenProps) {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
-  async function refresh() {
-    const list = await repository.listItems(binId);
-    setItems(list);
-    const entries = await Promise.all(
-      list.map(async (item) => {
-        if (!item.photoId) return [item.id, null] as const;
-        const photo = await repository.getPhoto(item.photoId);
-        return [item.id, photo?.dataUrl ?? null] as const;
-      }),
-    );
-    setPhotoUrls(Object.fromEntries(entries));
-  }
-
   useEffect(() => {
     setItems(null);
-    refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const unsubscribe = repository.subscribeItems(binId, setItems);
+    return unsubscribe;
   }, [binId]);
+
+  // 사진은 구독하지 않는다 — 목록이 바뀔 때마다 필요한 사진만 불러온다(repository가 세션 캐시함).
+  useEffect(() => {
+    if (!items) return;
+    let active = true;
+    (async () => {
+      const entries = await Promise.all(
+        items.map(async (item) => {
+          if (!item.photoId) return [item.id, null] as const;
+          const photo = await repository.getPhoto(item.photoId);
+          return [item.id, photo?.dataUrl ?? null] as const;
+        }),
+      );
+      if (active) setPhotoUrls(Object.fromEntries(entries));
+    })();
+    return () => {
+      active = false;
+    };
+  }, [items]);
 
   async function handlePhotoFile(file: File | undefined) {
     if (!file) return;
     try {
       const dataUrl = await compressImage(file, ITEM_IMAGE_OPTIONS);
       if (addDialog.type === 'choosePhotoSource') {
-        const photo = await repository.savePhoto(dataUrl);
+        const photo = await repository.savePhoto(binId, dataUrl);
         setAddDialog({ type: 'name', photoId: photo.id });
       } else if (editDialog.type === 'choosePhotoSource') {
         const item = editDialog.item;
-        const photo = await repository.savePhoto(dataUrl);
+        const photo = await repository.savePhoto(binId, dataUrl);
         const oldPhotoId = item.photoId;
         await repository.updateItem(item.id, { photoId: photo.id, emoji: undefined });
         if (oldPhotoId) await repository.removePhoto(oldPhotoId);
         setEditDialog({ type: 'none' });
-        await refresh();
       }
     } catch {
       showToast('사진을 처리하지 못했어요. 다시 시도해주세요.');
@@ -88,7 +93,6 @@ export function BinScreen({ binId }: BinScreenProps) {
     try {
       await repository.createItem({ binId, name, photoId: addDialog.photoId, emoji: addDialog.emoji });
       setAddDialog({ type: 'none' });
-      await refresh();
     } catch {
       showToast('물건을 추가하지 못했어요. 다시 시도해주세요.');
     }
@@ -98,7 +102,6 @@ export function BinScreen({ binId }: BinScreenProps) {
     try {
       await repository.updateItem(item.id, { name });
       setEditDialog({ type: 'none' });
-      await refresh();
     } catch {
       showToast('이름을 바꾸지 못했어요. 다시 시도해주세요.');
     }
@@ -110,7 +113,6 @@ export function BinScreen({ binId }: BinScreenProps) {
       await repository.updateItem(item.id, { emoji, photoId: null });
       if (oldPhotoId) await repository.removePhoto(oldPhotoId);
       setEditDialog({ type: 'none' });
-      await refresh();
     } catch {
       showToast('변경하지 못했어요. 다시 시도해주세요.');
     }
@@ -121,7 +123,6 @@ export function BinScreen({ binId }: BinScreenProps) {
       await repository.removeItem(item.id);
       setEditDialog({ type: 'none' });
       showToast('물건을 삭제했어요.');
-      await refresh();
     } catch {
       showToast('삭제하지 못했어요. 다시 시도해주세요.');
     }

@@ -21,13 +21,9 @@ export function MainScreen() {
   const push = useNavigationStore((s) => s.push);
   const showToast = useToastStore((s) => s.show);
 
-  async function refresh() {
-    const list = await repository.listHouses();
-    setHouses(list);
-  }
-
   useEffect(() => {
-    refresh();
+    const unsubscribe = repository.subscribeHouses(setHouses);
+    return unsubscribe;
   }, []);
 
   async function openHouse(house: House) {
@@ -48,7 +44,7 @@ export function MainScreen() {
 
   async function handleCreate(name: string) {
     try {
-      const house = await repository.createHouse({ name, ownerUid: getOwnerUid() });
+      const house = await repository.createHouse({ name, ownerUid: await getOwnerUid() });
       const floor = await repository.createFloor({
         houseId: house.id,
         name: '1층',
@@ -72,7 +68,6 @@ export function MainScreen() {
     try {
       await repository.updateHouse(house.id, { name });
       setDialog({ type: 'none' });
-      await refresh();
     } catch {
       showToast('이름을 바꾸지 못했어요. 다시 시도해주세요.');
     }
@@ -83,7 +78,6 @@ export function MainScreen() {
       await repository.removeHouse(house.id);
       setDialog({ type: 'none' });
       showToast('집을 삭제했어요.');
-      await refresh();
     } catch {
       showToast('삭제하지 못했어요. 다시 시도해주세요.');
     }

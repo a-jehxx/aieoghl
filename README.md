@@ -5,6 +5,24 @@ React + TypeScript + Vite + Tailwind CSS + zustand로 만들었습니다.
 
 프로젝트 규칙과 데이터 모델은 [`CLAUDE.md`](./CLAUDE.md)를 참고하세요.
 
+## Firebase 설정
+
+이 앱은 Firebase(Realtime Database + 익명 로그인)를 사용합니다. `.env.example`을 복사해 `.env`를 만들고,
+Firebase 콘솔의 웹 앱 설정값을 채워 넣으세요.
+
+```bash
+cp .env.example .env
+```
+
+`.env`가 없거나 값이 비어 있으면 앱은 자동으로 로컬(메모리) 저장을 사용합니다(새로고침하면 데이터가 사라짐).
+
+### 보안 규칙 배포
+
+`database.rules.json`에 Realtime Database 규칙이 있습니다(지금은 로그인한 사용자만 접근 가능한 임시 규칙).
+
+- Firebase CLI로 배포: `firebase deploy --only database` (사전에 `firebase login`, `firebase use <프로젝트id>` 필요)
+- 또는 Firebase 콘솔 → Realtime Database → Rules 탭에 `database.rules.json` 내용을 붙여넣고 게시
+
 ## 로컬에서 실행하기
 
 ```bash
@@ -32,5 +50,5 @@ npm run preview
 
 ## 현재 상태
 
-지금은 화면 골격과 로컬(메모리) 데이터 저장만 구현되어 있습니다. 새로고침하면 데이터가 초기화됩니다.
-Firebase 연결(실제 저장)은 이후 단계에서 추가할 예정입니다.
+Firebase(Realtime Database)에 연결되어 실제로 저장됩니다. `.env`를 설정하지 않으면 로컬(메모리) 저장으로 자동 대체되며, 이 경우 새로고침하면 데이터가 초기화됩니다.
+가족 공유 코드와 보안 규칙 강화는 이후 단계에서 추가할 예정입니다.

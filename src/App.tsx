@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigationStore, type Screen } from '@/store/navigationStore';
 import { useGuideStore } from '@/store/guideStore';
+import { useConnectionStore } from '@/firebase/connection';
 import { formatLocationPath } from '@/lib/search';
 import { TopBar } from '@/components/common/TopBar';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { GuideBanner } from '@/components/common/GuideBanner';
+import { OfflineBanner } from '@/components/common/OfflineBanner';
 import { Toast } from '@/components/common/Toast';
 import { SearchOverlay } from '@/components/search/SearchOverlay';
 import { MainScreen } from '@/screens/MainScreen';
@@ -74,6 +76,7 @@ export default function App() {
   const handlePopState = useNavigationStore((s) => s.handlePopState);
   const guideTarget = useGuideStore((s) => s.target);
   const stopGuide = useGuideStore((s) => s.stop);
+  const connected = useConnectionStore((s) => s.connected);
   const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
@@ -121,6 +124,7 @@ export default function App() {
   return (
     <div className="flex h-dvh flex-col bg-slate-50">
       <TopBar title={getScreenTitle(current)} onBack={goBack} onHome={goHome} extra={extra} />
+      {!connected && <OfflineBanner />}
       {guideTarget && (
         <GuideBanner
           itemName={guideTarget.itemName}

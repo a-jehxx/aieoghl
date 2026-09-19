@@ -60,12 +60,10 @@ export function FurnitureScreen({ furnitureId }: FurnitureScreenProps) {
   const showToast = useToastStore((s) => s.show);
   const guideTarget = useGuideStore((s) => s.target);
 
-  async function loadAll() {
+  async function loadFurnitureAndPhoto() {
     setLoading(true);
     const f = await repository.getFurniture(furnitureId);
     setFurniture(f ?? null);
-    const binList = await repository.listBins(furnitureId);
-    setBins(binList);
     if (f?.photoId) {
       const photo = await repository.getPhoto(f.photoId);
       setPhotoUrl(photo?.dataUrl ?? null);
@@ -79,8 +77,13 @@ export function FurnitureScreen({ furnitureId }: FurnitureScreenProps) {
     setMode('view');
     setSelectedBinId(null);
     setLiveRect(null);
-    loadAll();
+    loadFurnitureAndPhoto();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [furnitureId]);
+
+  useEffect(() => {
+    const unsubscribe = repository.subscribeBins(furnitureId, setBins);
+    return unsubscribe;
   }, [furnitureId]);
 
   function setModeTo(target: Mode) {
@@ -103,8 +106,6 @@ export function FurnitureScreen({ furnitureId }: FurnitureScreenProps) {
         h,
       });
       setDialog({ type: 'none' });
-      const binList = await repository.listBins(furnitureId);
-      setBins(binList);
       setSelectedBinId(bin.id);
     } catch {
       showToast('보관함을 추가하지 못했어요. 다시 시도해주세요.');
@@ -115,8 +116,6 @@ export function FurnitureScreen({ furnitureId }: FurnitureScreenProps) {
     try {
       await repository.updateBin(bin.id, { name });
       setDialog({ type: 'none' });
-      const binList = await repository.listBins(furnitureId);
-      setBins(binList);
     } catch {
       showToast('이름을 바꾸지 못했어요. 다시 시도해주세요.');
     }
@@ -128,8 +127,6 @@ export function FurnitureScreen({ furnitureId }: FurnitureScreenProps) {
       setDialog({ type: 'none' });
       setSelectedBinId(null);
       showToast('보관함을 삭제했어요.');
-      const binList = await repository.listBins(furnitureId);
-      setBins(binList);
     } catch {
       showToast('삭제하지 못했어요. 다시 시도해주세요.');
     }
