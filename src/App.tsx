@@ -57,6 +57,20 @@ function renderScreen(screen: Screen) {
   }
 }
 
+/**
+ * room/furniture/bin 화면은 자기가 어느 집 소속인지 직접 모른다(스택에 houseId가 없음).
+ * 대신 화면 이동 스택을 거슬러 올라가 가장 가까운 house/floor/share 화면에서 집 정보를 찾는다.
+ */
+function findHouseContext(stack: Screen[]): { houseId: string; houseName: string } | null {
+  for (let i = stack.length - 1; i >= 0; i--) {
+    const screen = stack[i];
+    if (screen.type === 'house') return { houseId: screen.houseId, houseName: screen.name };
+    if (screen.type === 'floor') return { houseId: screen.houseId, houseName: screen.houseName };
+    if (screen.type === 'share') return { houseId: screen.houseId, houseName: screen.houseName };
+  }
+  return null;
+}
+
 function isOnGuidePath(screen: Screen, target: { floorId: string; roomId: string; furnitureId: string; binId: string }) {
   switch (screen.type) {
     case 'floor':
@@ -92,13 +106,7 @@ export default function App() {
   }, [handlePopState]);
 
   const current = stack[stack.length - 1];
-
-  const houseContext =
-    current.type === 'house'
-      ? { houseId: current.houseId, houseName: current.name }
-      : current.type === 'floor'
-        ? { houseId: current.houseId, houseName: current.houseName }
-        : null;
+  const houseContext = findHouseContext(stack);
 
   const extra = (
     <>
