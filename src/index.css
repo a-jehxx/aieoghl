@@ -10,3 +10,36 @@ body {
   overscroll-behavior-y: contain;
   -webkit-tap-highlight-color: transparent;
 }
+
+/* 위치 안내 깜빡임: 밝은 노랑, 0.8초 주기. 탭 동작을 막지 않도록 같은 요소에 덧붙인다. */
+@keyframes hsm-blink-shape {
+  0%,
+  100% {
+    fill: #fde047;
+    stroke: #ca8a04;
+    fill-opacity: 1;
+  }
+  50% {
+    fill: #fde047;
+    stroke: #ca8a04;
+    fill-opacity: 0.35;
+  }
+}
+.hsm-blink-shape {
+  animation: hsm-blink-shape 0.8s ease-in-out infinite;
+}
+
+@keyframes hsm-blink-card {
+  0%,
+  100% {
+    background-color: #fde047;
+    border-color: #ca8a04;
+  }
+  50% {
+    background-color: #fef9c3;
+    border-color: #eab308;
+  }
+}
+.hsm-blink-card {
+  animation: hsm-blink-card 0.8s ease-in-out infinite;
+}

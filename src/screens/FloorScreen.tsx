@@ -3,6 +3,7 @@ import { repository } from '@/repository';
 import type { Floor, Point, Room } from '@/types';
 import { useNavigationStore } from '@/store/navigationStore';
 import { useToastStore } from '@/store/toastStore';
+import { useGuideStore } from '@/store/guideStore';
 import { Loading } from '@/components/common/Loading';
 import { PromptDialog } from '@/components/common/PromptDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -35,6 +36,7 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
 
   const push = useNavigationStore((s) => s.push);
   const showToast = useToastStore((s) => s.show);
+  const guideTarget = useGuideStore((s) => s.target);
 
   const fileInputCameraRef = useRef<HTMLInputElement>(null);
   const fileInputGalleryRef = useRef<HTMLInputElement>(null);
@@ -243,19 +245,24 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
               onEmptyTap={handleEmptyTap}
               overlay={
                 <>
-                  {rooms.map((room) => (
-                    <polygon
-                      key={room.id}
-                      data-hit-id={room.id}
-                      points={room.points.map((p) => `${p.x * 100},${p.y * 100}`).join(' ')}
-                      className={
-                        selectedRoomId === room.id
-                          ? 'fill-blue-500/40 stroke-blue-700'
-                          : 'fill-blue-500/25 stroke-blue-600'
-                      }
-                      strokeWidth={0.6}
-                    />
-                  ))}
+                  {rooms.map((room) => {
+                    const blinking = guideTarget?.floorId === floorId && guideTarget?.roomId === room.id;
+                    return (
+                      <polygon
+                        key={room.id}
+                        data-hit-id={room.id}
+                        points={room.points.map((p) => `${p.x * 100},${p.y * 100}`).join(' ')}
+                        className={
+                          blinking
+                            ? 'hsm-blink-shape'
+                            : selectedRoomId === room.id
+                              ? 'fill-blue-500/40 stroke-blue-700'
+                              : 'fill-blue-500/25 stroke-blue-600'
+                        }
+                        strokeWidth={0.6}
+                      />
+                    );
+                  })}
                   {drawingPoints && drawingPoints.length > 0 && (
                     <>
                       <polyline

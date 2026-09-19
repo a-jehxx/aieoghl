@@ -1,8 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigationStore, type Screen } from '@/store/navigationStore';
+import { useGuideStore } from '@/store/guideStore';
+import { formatLocationPath } from '@/lib/search';
 import { TopBar } from '@/components/common/TopBar';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { GuideBanner } from '@/components/common/GuideBanner';
 import { Toast } from '@/components/common/Toast';
+import { SearchOverlay } from '@/components/search/SearchOverlay';
 import { MainScreen } from '@/screens/MainScreen';
 import { HouseScreen } from '@/screens/HouseScreen';
 import { FloorScreen } from '@/screens/FloorScreen';
@@ -44,6 +48,21 @@ function renderScreen(screen: Screen) {
   }
 }
 
+function isOnGuidePath(screen: Screen, target: { floorId: string; roomId: string; furnitureId: string; binId: string }) {
+  switch (screen.type) {
+    case 'floor':
+      return screen.floorId === target.floorId;
+    case 'room':
+      return screen.roomId === target.roomId;
+    case 'furniture':
+      return screen.furnitureId === target.furnitureId;
+    case 'bin':
+      return screen.binId === target.binId;
+    default:
+      return false;
+  }
+}
+
 export default function App() {
   const stack = useNavigationStore((s) => s.stack);
   const exitConfirmOpen = useNavigationStore((s) => s.exitConfirmOpen);
@@ -53,6 +72,9 @@ export default function App() {
   const confirmExit = useNavigationStore((s) => s.confirmExit);
   const cancelExit = useNavigationStore((s) => s.cancelExit);
   const handlePopState = useNavigationStore((s) => s.handlePopState);
+  const guideTarget = useGuideStore((s) => s.target);
+  const stopGuide = useGuideStore((s) => s.stop);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     // 폰의 뒤로가기(popstate)를 항상 가로챌 수 있도록 히스토리 항목을 하나 더 쌓아둔다.
@@ -64,21 +86,49 @@ export default function App() {
 
   const current = stack[stack.length - 1];
 
-  const extra =
-    current.type === 'floor' ? (
-      <button
-        type="button"
-        onClick={() => push({ type: 'house', houseId: current.houseId, name: current.houseName })}
-        aria-label="층 관리"
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xl active:bg-slate-100"
-      >
-        🗂
-      </button>
-    ) : null;
+  const houseContext =
+    current.type === 'house'
+      ? { houseId: current.houseId, houseName: current.name }
+      : current.type === 'floor'
+        ? { houseId: current.houseId, houseName: current.houseName }
+        : null;
+
+  const extra = (
+    <>
+      {houseContext && (
+        <button
+          type="button"
+          onClick={() => setSearchOpen(true)}
+          aria-label="검색"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xl active:bg-slate-100"
+        >
+          🔍
+        </button>
+      )}
+      {current.type === 'floor' && (
+        <button
+          type="button"
+          onClick={() => push({ type: 'house', houseId: current.houseId, name: current.houseName })}
+          aria-label="층 관리"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xl active:bg-slate-100"
+        >
+          🗂
+        </button>
+      )}
+    </>
+  );
 
   return (
     <div className="flex h-dvh flex-col bg-slate-50">
       <TopBar title={getScreenTitle(current)} onBack={goBack} onHome={goHome} extra={extra} />
+      {guideTarget && (
+        <GuideBanner
+          itemName={guideTarget.itemName}
+          path={`${formatLocationPath(guideTarget)} › ${guideTarget.itemName}`}
+          offPath={!isOnGuidePath(current, guideTarget)}
+          onStop={stopGuide}
+        />
+      )}
       <main className="flex-1 overflow-hidden">{renderScreen(current)}</main>
       <ConfirmDialog
         open={exitConfirmOpen}
@@ -87,6 +137,12 @@ export default function App() {
         cancelLabel="아니오"
         onConfirm={confirmExit}
         onCancel={cancelExit}
+      />
+      <SearchOverlay
+        open={searchOpen}
+        houseId={houseContext?.houseId ?? null}
+        houseName={houseContext?.houseName ?? ''}
+        onClose={() => setSearchOpen(false)}
       />
       <Toast />
     </div>

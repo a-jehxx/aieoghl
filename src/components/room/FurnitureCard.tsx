@@ -8,6 +8,7 @@ interface FurnitureCardProps {
   furniture: Furniture;
   photoUrl: string | null;
   containerRef: RefObject<HTMLDivElement | null>;
+  blinking?: boolean;
   onTap: () => void;
   onDragEnd: (x: number, y: number) => void;
   onLongPressSelect: () => void;
@@ -30,6 +31,7 @@ export function FurnitureCard({
   furniture,
   photoUrl,
   containerRef,
+  blinking = false,
   onTap,
   onDragEnd,
   onLongPressSelect,
@@ -112,7 +114,9 @@ export function FurnitureCard({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
-      className="absolute flex w-24 touch-none select-none flex-col items-center rounded-xl border-2 border-emerald-500 bg-emerald-50 p-1.5 shadow-sm"
+      className={`absolute flex w-24 touch-none select-none flex-col items-center rounded-xl border-2 p-1.5 shadow-sm ${
+        blinking ? 'hsm-blink-card' : 'border-emerald-500 bg-emerald-50'
+      }`}
     >
       <div className="flex h-16 w-full items-center justify-center overflow-hidden rounded-lg bg-white">
         {photoUrl ? (

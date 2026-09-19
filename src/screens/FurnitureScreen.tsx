@@ -3,6 +3,7 @@ import { repository } from '@/repository';
 import type { Bin, Furniture } from '@/types';
 import { useNavigationStore } from '@/store/navigationStore';
 import { useToastStore } from '@/store/toastStore';
+import { useGuideStore } from '@/store/guideStore';
 import { Loading } from '@/components/common/Loading';
 import { PromptDialog } from '@/components/common/PromptDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -57,6 +58,7 @@ export function FurnitureScreen({ furnitureId }: FurnitureScreenProps) {
 
   const push = useNavigationStore((s) => s.push);
   const showToast = useToastStore((s) => s.show);
+  const guideTarget = useGuideStore((s) => s.target);
 
   async function loadAll() {
     setLoading(true);
@@ -267,6 +269,7 @@ export function FurnitureScreen({ furnitureId }: FurnitureScreenProps) {
               {bins.map((bin) => {
                 const rect = (liveRect && liveRect.id === bin.id ? liveRect : bin) as Rect;
                 const isSelected = selectedBinId === bin.id;
+                const blinking = guideTarget?.furnitureId === furnitureId && guideTarget?.binId === bin.id;
                 return (
                   <g key={bin.id}>
                     <rect
@@ -276,7 +279,11 @@ export function FurnitureScreen({ furnitureId }: FurnitureScreenProps) {
                       width={rect.w * 100}
                       height={rect.h * 100}
                       className={
-                        isSelected ? 'fill-orange-500/40 stroke-orange-700' : 'fill-orange-500/25 stroke-orange-600'
+                        blinking
+                          ? 'hsm-blink-shape'
+                          : isSelected
+                            ? 'fill-orange-500/40 stroke-orange-700'
+                            : 'fill-orange-500/25 stroke-orange-600'
                       }
                       strokeWidth={0.6}
                     />

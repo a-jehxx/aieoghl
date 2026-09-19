@@ -3,6 +3,7 @@ import { repository } from '@/repository';
 import type { Furniture } from '@/types';
 import { useNavigationStore } from '@/store/navigationStore';
 import { useToastStore } from '@/store/toastStore';
+import { useGuideStore } from '@/store/guideStore';
 import { Loading } from '@/components/common/Loading';
 import { ActionSheet } from '@/components/common/ActionSheet';
 import { PromptDialog } from '@/components/common/PromptDialog';
@@ -36,6 +37,7 @@ export function RoomScreen({ roomId }: RoomScreenProps) {
 
   const push = useNavigationStore((s) => s.push);
   const showToast = useToastStore((s) => s.show);
+  const guideTarget = useGuideStore((s) => s.target);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -132,6 +134,7 @@ export function RoomScreen({ roomId }: RoomScreenProps) {
           furniture={f}
           photoUrl={photoUrls[f.id] ?? null}
           containerRef={containerRef}
+          blinking={guideTarget?.roomId === roomId && guideTarget?.furnitureId === f.id}
           onTap={() => push({ type: 'furniture', furnitureId: f.id, name: f.name })}
           onDragEnd={(x, y) => handleDragEnd(f.id, x, y)}
           onLongPressSelect={() => setItemDialog({ type: 'menu', furniture: f })}

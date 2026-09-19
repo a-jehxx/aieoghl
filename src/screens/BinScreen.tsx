@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { repository } from '@/repository';
 import type { Item } from '@/types';
 import { useToastStore } from '@/store/toastStore';
+import { useGuideStore } from '@/store/guideStore';
 import { Loading } from '@/components/common/Loading';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ActionSheet } from '@/components/common/ActionSheet';
@@ -36,6 +37,7 @@ export function BinScreen({ binId }: BinScreenProps) {
   const [editDialog, setEditDialog] = useState<EditDialogState>({ type: 'none' });
 
   const showToast = useToastStore((s) => s.show);
+  const guideTarget = useGuideStore((s) => s.target);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
@@ -143,12 +145,16 @@ export function BinScreen({ binId }: BinScreenProps) {
         <EmptyState title="아직 담긴 물건이 없어요" description="사진이나 이모티콘으로 물건을 추가해보세요." />
       ) : (
         <div className="grid grid-cols-3 gap-3">
-          {items.map((item) => (
+          {items.map((item) => {
+            const blinking = guideTarget?.binId === binId && guideTarget?.itemId === item.id;
+            return (
             <button
               key={item.id}
               type="button"
               onClick={() => setEditDialog({ type: 'panel', item })}
-              className="flex flex-col items-center gap-1.5 rounded-xl border border-slate-200 bg-white p-2 shadow-sm active:bg-slate-50"
+              className={`flex flex-col items-center gap-1.5 rounded-xl border p-2 shadow-sm active:bg-slate-50 ${
+                blinking ? 'hsm-blink-card' : 'border-slate-200 bg-white'
+              }`}
             >
               <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg bg-slate-100">
                 {item.photoId && photoUrls[item.id] ? (
@@ -159,7 +165,8 @@ export function BinScreen({ binId }: BinScreenProps) {
               </div>
               <p className="w-full truncate text-center text-xs font-medium text-slate-900">{item.name}</p>
             </button>
-          ))}
+            );
+          })}
         </div>
       )}
 
