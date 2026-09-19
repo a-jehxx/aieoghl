@@ -7,6 +7,7 @@ import { useGuideStore } from '@/store/guideStore';
 import { Loading } from '@/components/common/Loading';
 import { PromptDialog } from '@/components/common/PromptDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { ActionSheet } from '@/components/common/ActionSheet';
 import { SelectedItemBar } from '@/components/common/SelectedItemBar';
 import { PhotoCanvas } from '@/components/photo/PhotoCanvas';
 import { compressImage, PLAN_IMAGE_OPTIONS } from '@/lib/compressImage';
@@ -33,6 +34,7 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
   const [drawingPoints, setDrawingPoints] = useState<Point[] | null>(null);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [dialog, setDialog] = useState<DialogState>({ type: 'none' });
+  const [replaceMenuOpen, setReplaceMenuOpen] = useState(false);
 
   const push = useNavigationStore((s) => s.push);
   const showToast = useToastStore((s) => s.show);
@@ -40,7 +42,6 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
 
   const fileInputCameraRef = useRef<HTMLInputElement>(null);
   const fileInputGalleryRef = useRef<HTMLInputElement>(null);
-  const fileInputReplaceRef = useRef<HTMLInputElement>(null);
 
   async function loadAll() {
     setLoading(true);
@@ -230,7 +231,7 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
             </div>
             <button
               type="button"
-              onClick={() => fileInputReplaceRef.current?.click()}
+              onClick={() => setReplaceMenuOpen(true)}
               className="h-9 rounded-lg border border-slate-300 px-3 text-sm font-medium text-slate-600 active:bg-slate-100"
             >
               도면 교체
@@ -358,15 +359,26 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
           e.target.value = '';
         }}
       />
-      <input
-        ref={fileInputReplaceRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => {
-          handlePlanFile(e.target.files?.[0]);
-          e.target.value = '';
-        }}
+      <ActionSheet
+        open={replaceMenuOpen}
+        title="도면 교체"
+        options={[
+          {
+            label: '촬영',
+            onSelect: () => {
+              setReplaceMenuOpen(false);
+              fileInputCameraRef.current?.click();
+            },
+          },
+          {
+            label: '갤러리에서 가져오기',
+            onSelect: () => {
+              setReplaceMenuOpen(false);
+              fileInputGalleryRef.current?.click();
+            },
+          },
+        ]}
+        onCancel={() => setReplaceMenuOpen(false)}
       />
 
       <PromptDialog

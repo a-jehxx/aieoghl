@@ -29,6 +29,27 @@ const GRID_BACKGROUND: CSSProperties = {
   backgroundSize: '24px 24px',
 };
 
+// FurnitureCard의 실제 폭(w-24 = 96px) 기준. 카드끼리 겹치지 않을 만큼 충분히 떨어뜨린다.
+const FURNITURE_CARD_SIZE_PX = 96;
+const FURNITURE_CARD_GAP_PX = 16;
+
+/**
+ * 새 가구를 캔버스 중앙 부근에 배치하되, 이미 놓인 가구 수만큼 카드 크기만큼 떨어뜨려서
+ * 여러 개를 놓아도 서로 겹쳐 아래 카드가 가려지고 탭이 안 되는 문제를 피한다.
+ */
+function nextFurniturePosition(existingCount: number, containerWidthPx: number) {
+  const width = Math.max(containerWidthPx, 200);
+  const step = Math.min(0.3, (FURNITURE_CARD_SIZE_PX + FURNITURE_CARD_GAP_PX) / width);
+  const cols = Math.max(2, Math.floor(0.9 / step));
+  const col = existingCount % cols;
+  const row = Math.floor(existingCount / cols) % cols;
+  const offset = ((cols - 1) * step) / 2;
+  return {
+    x: Math.min(0.95, Math.max(0.05, 0.5 - offset + col * step)),
+    y: Math.min(0.95, Math.max(0.05, 0.5 - offset + row * step)),
+  };
+}
+
 export function RoomScreen({ roomId }: RoomScreenProps) {
   const [furnitureList, setFurnitureList] = useState<Furniture[] | null>(null);
   const [photoUrls, setPhotoUrls] = useState<Record<string, string | null>>({});
@@ -87,7 +108,8 @@ export function RoomScreen({ roomId }: RoomScreenProps) {
   async function handleCreateFurniture(name: string) {
     if (addDialog.type !== 'name') return;
     try {
-      await repository.createFurniture({ roomId, name, photoId: addDialog.photoId, x: 0.5, y: 0.5 });
+      const { x, y } = nextFurniturePosition(furnitureList?.length ?? 0, containerRef.current?.clientWidth ?? 390);
+      await repository.createFurniture({ roomId, name, photoId: addDialog.photoId, x, y });
       setAddDialog({ type: 'none' });
       await refresh();
     } catch {

@@ -20,8 +20,6 @@ interface PinchGesture {
   mode: 'pinch';
   startDistance: number;
   startScale: number;
-  startMidX: number;
-  startMidY: number;
 }
 
 interface ItemGesture {
@@ -89,6 +87,7 @@ export function PhotoCanvas({
   const imgRef = useRef<HTMLImageElement>(null);
   const transformRef = useRef<Transform>({ scale: 1, x: 0, y: 0 });
   const gestureRef = useRef<Gesture | null>(null);
+  const naturalSizeRef = useRef<{ width: number; height: number } | null>(null);
 
   const onTapHitRef = useRef(onTapHit);
   const onEmptyTapRef = useRef(onEmptyTap);
@@ -116,8 +115,37 @@ export function PhotoCanvas({
     }
   }
 
+  /** 도면이 화면 밖으로 완전히 벗어나지 않도록 팬/줌 결과를 이미지 경계 안으로 가둔다. */
+  function clampTransform() {
+    const outerRect = outerRef.current?.getBoundingClientRect();
+    const natural = naturalSizeRef.current;
+    if (!outerRect || outerRect.width === 0 || !natural || natural.width === 0) return;
+    const t = transformRef.current;
+    const baseHeight = outerRect.width * (natural.height / natural.width);
+    const scaledWidth = outerRect.width * t.scale;
+    const scaledHeight = baseHeight * t.scale;
+
+    t.x =
+      scaledWidth <= outerRect.width
+        ? (outerRect.width - scaledWidth) / 2
+        : Math.min(0, Math.max(outerRect.width - scaledWidth, t.x));
+    t.y =
+      scaledHeight <= outerRect.height
+        ? (outerRect.height - scaledHeight) / 2
+        : Math.min(0, Math.max(outerRect.height - scaledHeight, t.y));
+  }
+
+  function handleImageLoad() {
+    const img = imgRef.current;
+    if (!img) return;
+    naturalSizeRef.current = { width: img.naturalWidth, height: img.naturalHeight };
+    clampTransform();
+    applyTransform();
+  }
+
   useEffect(() => {
     transformRef.current = { scale: 1, x: 0, y: 0 };
+    clampTransform();
     applyTransform();
   }, [resetKey]);
 
@@ -186,13 +214,10 @@ export function PhotoCanvas({
         const prev = gestureRef.current;
         if (prev?.mode === 'item-candidate') window.clearTimeout(prev.timer);
         const [t0, t1] = [e.touches[0], e.touches[1]];
-        const mid = midpoint(t0, t1);
         gestureRef.current = {
           mode: 'pinch',
           startDistance: distance(t0, t1),
           startScale: transformRef.current.scale,
-          startMidX: mid.x,
-          startMidY: mid.y,
         };
       }
     }
@@ -212,6 +237,7 @@ export function PhotoCanvas({
         gesture.lastY = touch.clientY;
         transformRef.current.x += dx;
         transformRef.current.y += dy;
+        clampTransform();
         applyTransform();
       } else if (gesture.mode === 'pinch' && e.touches.length === 2) {
         e.preventDefault();
@@ -223,12 +249,15 @@ export function PhotoCanvas({
 
         const outerRect = outerRef.current?.getBoundingClientRect();
         if (outerRect) {
+          // 확대 기준점은 항상 "지금 이 프레임"의 손가락 중점을 써야 흔들리지 않는다
+          // (제스처 시작 시점의 좌표를 계속 쓰면 매 프레임 오차가 누적돼 화면이 떠다닌다).
           const t = transformRef.current;
-          const contentX = (gesture.startMidX - outerRect.left - t.x) / t.scale;
-          const contentY = (gesture.startMidY - outerRect.top - t.y) / t.scale;
+          const contentX = (mid.x - outerRect.left - t.x) / t.scale;
+          const contentY = (mid.y - outerRect.top - t.y) / t.scale;
           t.x = mid.x - outerRect.left - contentX * newScale;
           t.y = mid.y - outerRect.top - contentY * newScale;
           t.scale = newScale;
+          clampTransform();
           applyTransform();
         }
       } else if (gesture.mode === 'item-candidate' && e.touches.length === 1) {
@@ -331,6 +360,7 @@ export function PhotoCanvas({
           alt=""
           className="block w-full select-none"
           draggable={false}
+          onLoad={handleImageLoad}
         />
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
           {overlay}
