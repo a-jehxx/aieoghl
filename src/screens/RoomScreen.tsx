@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { repository } from '@/repository';
 import type { Furniture } from '@/types';
 import { useNavigationStore } from '@/store/navigationStore';
@@ -36,17 +36,18 @@ const FURNITURE_CARD_GAP_PX = 16;
 /**
  * 새 가구를 캔버스 중앙 부근에 배치하되, 이미 놓인 가구 수만큼 카드 크기만큼 떨어뜨려서
  * 여러 개를 놓아도 서로 겹쳐 아래 카드가 가려지고 탭이 안 되는 문제를 피한다.
+ * 한 화면에 들어가는 칸을 넘어서면(9개 이상) 줄을 바꿔 계속 아래로 쌓는다(스크롤로 확인).
  */
 function nextFurniturePosition(existingCount: number, containerWidthPx: number) {
   const width = Math.max(containerWidthPx, 200);
   const step = Math.min(0.3, (FURNITURE_CARD_SIZE_PX + FURNITURE_CARD_GAP_PX) / width);
   const cols = Math.max(2, Math.floor(0.9 / step));
   const col = existingCount % cols;
-  const row = Math.floor(existingCount / cols) % cols;
+  const row = Math.floor(existingCount / cols);
   const offset = ((cols - 1) * step) / 2;
   return {
     x: Math.min(0.95, Math.max(0.05, 0.5 - offset + col * step)),
-    y: Math.min(0.95, Math.max(0.05, 0.5 - offset + row * step)),
+    y: Math.max(0.05, 0.5 - offset + row * step),
   };
 }
 
@@ -55,14 +56,23 @@ export function RoomScreen({ roomId }: RoomScreenProps) {
   const [photoUrls, setPhotoUrls] = useState<Record<string, string | null>>({});
   const [addDialog, setAddDialog] = useState<AddDialogState>({ type: 'none' });
   const [itemDialog, setItemDialog] = useState<ItemDialogState>({ type: 'none' });
+  const [viewportHeight, setViewportHeight] = useState(0);
 
   const push = useNavigationStore((s) => s.push);
   const showToast = useToastStore((s) => s.show);
   const guideTarget = useGuideStore((s) => s.target);
 
+  // 스크롤 컨테이너(화면에 보이는 높이는 항상 고정). 가구 좌표(x,y 0~1)는 이 높이를 기준으로 계산해서
+  // 가구가 늘어나 캔버스가 세로로 길어져도(9개 이상) 이미 놓인 가구의 위치가 밀리지 않는다.
   const containerRef = useRef<HTMLDivElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+
+  useLayoutEffect(() => {
+    // furnitureList가 null인 동안(로딩 중)에는 캔버스 자체가 아직 렌더되지 않아 ref가 비어 있다.
+    // 로딩이 끝나 캔버스가 처음 그려질 때 다시 측정되도록 furnitureList를 의존성에 둔다.
+    if (containerRef.current) setViewportHeight(containerRef.current.clientHeight);
+  }, [furnitureList]);
 
   async function refresh() {
     const list = await repository.listFurniture(roomId);
@@ -142,26 +152,34 @@ export function RoomScreen({ roomId }: RoomScreenProps) {
     return <Loading />;
   }
 
-  return (
-    <div ref={containerRef} className="relative h-full w-full overflow-hidden bg-white" style={GRID_BACKGROUND}>
-      {furnitureList.length === 0 && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-10 text-center text-sm text-slate-400">
-          아직 배치된 가구가 없어요. 오른쪽 아래 + 버튼으로 가구를 추가해보세요.
-        </div>
-      )}
+  const maxY = furnitureList.reduce((max, f) => Math.max(max, f.y), 0.5);
+  const canvasHeightPx = Math.max(viewportHeight, (maxY + 0.18) * viewportHeight);
 
-      {furnitureList.map((f) => (
-        <FurnitureCard
-          key={f.id}
-          furniture={f}
-          photoUrl={photoUrls[f.id] ?? null}
-          containerRef={containerRef}
-          blinking={guideTarget?.roomId === roomId && guideTarget?.furnitureId === f.id}
-          onTap={() => push({ type: 'furniture', furnitureId: f.id, name: f.name })}
-          onDragEnd={(x, y) => handleDragEnd(f.id, x, y)}
-          onLongPressSelect={() => setItemDialog({ type: 'menu', furniture: f })}
-        />
-      ))}
+  return (
+    <div className="relative h-full w-full overflow-hidden">
+      <div ref={containerRef} className="h-full w-full overflow-x-hidden overflow-y-auto bg-white">
+        <div className="relative w-full" style={{ height: canvasHeightPx, ...GRID_BACKGROUND }}>
+          {furnitureList.length === 0 && (
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-10 text-center text-sm text-slate-400">
+              아직 배치된 가구가 없어요. 오른쪽 아래 + 버튼으로 가구를 추가해보세요.
+            </div>
+          )}
+
+          {furnitureList.map((f) => (
+            <FurnitureCard
+              key={f.id}
+              furniture={f}
+              photoUrl={photoUrls[f.id] ?? null}
+              containerRef={containerRef}
+              viewportHeightPx={viewportHeight}
+              blinking={guideTarget?.roomId === roomId && guideTarget?.furnitureId === f.id}
+              onTap={() => push({ type: 'furniture', furnitureId: f.id, name: f.name })}
+              onDragEnd={(x, y) => handleDragEnd(f.id, x, y)}
+              onLongPressSelect={() => setItemDialog({ type: 'menu', furniture: f })}
+            />
+          ))}
+        </div>
+      </div>
 
       <button
         type="button"

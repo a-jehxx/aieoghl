@@ -7,7 +7,10 @@ const MOVE_THRESHOLD = 8;
 interface FurnitureCardProps {
   furniture: Furniture;
   photoUrl: string | null;
+  /** 스크롤 컨테이너(화면에 보이는 높이는 항상 고정) — x/y 비율과 드래그 계산 기준. */
   containerRef: RefObject<HTMLDivElement | null>;
+  /** containerRef의 고정 높이(px). y*viewportHeightPx로 세로 위치를 계산한다. */
+  viewportHeightPx: number;
   blinking?: boolean;
   onTap: () => void;
   onDragEnd: (x: number, y: number) => void;
@@ -31,6 +34,7 @@ export function FurnitureCard({
   furniture,
   photoUrl,
   containerRef,
+  viewportHeightPx,
   blinking = false,
   onTap,
   onDragEnd,
@@ -90,7 +94,8 @@ export function FurnitureCard({
       const rect = containerRef.current?.getBoundingClientRect();
       if (rect && rect.width > 0 && rect.height > 0) {
         const nx = Math.min(0.97, Math.max(0.03, furniture.x + gesture.dx / rect.width));
-        const ny = Math.min(0.97, Math.max(0.03, furniture.y + gesture.dy / rect.height));
+        // 세로는 스크롤로 더 내려갈 수 있으니 위쪽만 제한하고 아래쪽은 막지 않는다.
+        const ny = Math.max(0.03, furniture.y + gesture.dy / rect.height);
         onDragEnd(nx, ny);
       }
       setDragOffset(null);
@@ -103,7 +108,7 @@ export function FurnitureCard({
 
   const style: CSSProperties = {
     left: `${furniture.x * 100}%`,
-    top: `${furniture.y * 100}%`,
+    top: `${furniture.y * viewportHeightPx}px`,
     transform: `translate(-50%, -50%) translate(${dragOffset?.dx ?? 0}px, ${dragOffset?.dy ?? 0}px)`,
   };
 
