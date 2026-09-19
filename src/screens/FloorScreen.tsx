@@ -12,6 +12,7 @@ import { SelectedItemBar } from '@/components/common/SelectedItemBar';
 import { ModeToggle } from '@/components/common/ModeToggle';
 import { PhotoCanvas } from '@/components/photo/PhotoCanvas';
 import { compressImage, PLAN_IMAGE_OPTIONS } from '@/lib/compressImage';
+import { ROOM_SHAPE } from '@/styles/entity';
 
 interface FloorScreenProps {
   floorId: string;
@@ -211,7 +212,7 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
             <button
               type="button"
               onClick={() => setReplaceMenuOpen(true)}
-              className="h-9 rounded-[10px] border border-line px-3 text-sm font-medium text-ink active:bg-bg"
+              className="h-11 rounded-[10px] border border-line px-3 text-sm font-medium text-ink active:bg-bg"
             >
               도면 교체
             </button>
@@ -237,8 +238,8 @@ export function FloorScreen({ floorId }: FloorScreenProps) {
                           blinking
                             ? 'hsm-blink-shape'
                             : selectedRoomId === room.id
-                              ? 'fill-blue-500/40 stroke-blue-700'
-                              : 'fill-blue-500/25 stroke-blue-600'
+                              ? ROOM_SHAPE.selected
+                              : ROOM_SHAPE.normal
                         }
                         strokeWidth={0.6}
                       />

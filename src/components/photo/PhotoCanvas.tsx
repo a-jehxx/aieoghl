@@ -352,14 +352,14 @@ export function PhotoCanvas({
     <div
       ref={outerRef}
       onContextMenu={(e) => e.preventDefault()}
-      className="relative h-full w-full touch-none overflow-hidden bg-slate-900"
+      className="relative h-full w-full touch-none overflow-hidden bg-[#E6E9EF]"
     >
       <div ref={innerRef} className="relative w-full origin-top-left">
         <img
           ref={imgRef}
           src={imageUrl}
           alt=""
-          className="hsm-no-callout block w-full select-none"
+          className="hsm-no-callout block w-full select-none ring-1 ring-line"
           draggable={false}
           onLoad={handleImageLoad}
         />

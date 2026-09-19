@@ -13,7 +13,7 @@ export function ModeToggle({ mode, onChange }: ModeToggleProps) {
       <button
         type="button"
         onClick={() => onChange('view')}
-        className={`h-9 px-3 text-sm font-medium ${
+        className={`h-11 px-3 text-sm font-medium ${
           mode === 'view' ? 'bg-navy text-white' : 'bg-white text-ink-sub'
         }`}
       >
@@ -22,7 +22,7 @@ export function ModeToggle({ mode, onChange }: ModeToggleProps) {
       <button
         type="button"
         onClick={() => onChange('edit')}
-        className={`h-9 px-3 text-sm font-medium ${
+        className={`h-11 px-3 text-sm font-medium ${
           mode === 'edit' ? 'bg-navy text-white' : 'bg-white text-ink-sub'
         }`}
       >

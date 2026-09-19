@@ -45,13 +45,13 @@ img {
 @keyframes hsm-blink-shape {
   0%,
   100% {
-    fill: #fde047;
-    stroke: #ca8a04;
+    fill: #ffd23f;
+    stroke: #e0a800;
     fill-opacity: 1;
   }
   50% {
-    fill: #fde047;
-    stroke: #ca8a04;
+    fill: #ffd23f;
+    stroke: #e0a800;
     fill-opacity: 0.35;
   }
 }
@@ -62,14 +62,28 @@ img {
 @keyframes hsm-blink-card {
   0%,
   100% {
-    background-color: #fde047;
-    border-color: #ca8a04;
+    background-color: #ffd23f;
+    border-color: #e0a800;
   }
   50% {
-    background-color: #fef9c3;
-    border-color: #eab308;
+    background-color: #fef3c7;
+    border-color: #e0a800;
   }
 }
 .hsm-blink-card {
   animation: hsm-blink-card 0.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hsm-blink-shape {
+    animation: none;
+    fill: #ffd23f;
+    stroke: #e0a800;
+    fill-opacity: 1;
+  }
+  .hsm-blink-card {
+    animation: none;
+    background-color: #ffd23f;
+    border-color: #e0a800;
+  }
 }
