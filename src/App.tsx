@@ -1,0 +1,61 @@
+import { useEffect } from 'react';
+import { useNavigationStore, type Screen } from '@/store/navigationStore';
+import { TopBar } from '@/components/common/TopBar';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { Toast } from '@/components/common/Toast';
+import { MainScreen } from '@/screens/MainScreen';
+import { PlaceholderScreen } from '@/screens/PlaceholderScreen';
+
+function getScreenTitle(screen: Screen): string {
+  switch (screen.type) {
+    case 'main':
+      return 'HSM';
+    case 'placeholder':
+      return screen.title;
+  }
+}
+
+function renderScreen(screen: Screen) {
+  switch (screen.type) {
+    case 'main':
+      return <MainScreen />;
+    case 'placeholder':
+      return <PlaceholderScreen title={screen.title} />;
+  }
+}
+
+export default function App() {
+  const stack = useNavigationStore((s) => s.stack);
+  const exitConfirmOpen = useNavigationStore((s) => s.exitConfirmOpen);
+  const goBack = useNavigationStore((s) => s.goBack);
+  const goHome = useNavigationStore((s) => s.goHome);
+  const confirmExit = useNavigationStore((s) => s.confirmExit);
+  const cancelExit = useNavigationStore((s) => s.cancelExit);
+  const handlePopState = useNavigationStore((s) => s.handlePopState);
+
+  useEffect(() => {
+    // 폰의 뒤로가기(popstate)를 항상 가로챌 수 있도록 히스토리 항목을 하나 더 쌓아둔다.
+    window.history.pushState({ depth: 1 }, '');
+    const onPopState = () => handlePopState();
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [handlePopState]);
+
+  const current = stack[stack.length - 1];
+
+  return (
+    <div className="flex h-dvh flex-col bg-slate-50">
+      <TopBar title={getScreenTitle(current)} onBack={goBack} onHome={goHome} />
+      <main className="flex-1 overflow-y-auto">{renderScreen(current)}</main>
+      <ConfirmDialog
+        open={exitConfirmOpen}
+        title="앱을 종료하시겠습니까?"
+        confirmLabel="예"
+        cancelLabel="아니오"
+        onConfirm={confirmExit}
+        onCancel={cancelExit}
+      />
+      <Toast />
+    </div>
+  );
+}

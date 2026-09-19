@@ -1,3 +1,1 @@
-# Expo HAS CHANGED
-
-Read the exact versioned docs at https://docs.expo.dev/versions/v57.0.0/ before writing any code.
+이 저장소의 규칙과 진행 상황은 CLAUDE.md를 따른다.

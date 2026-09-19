@@ -1,50 +1,36 @@
-# aieoghl
+# HSM — 집 물건 보관 관리 웹앱
 
-휴대폰에 설치해서 쓰는 앱을 "바이브 코딩"으로 만들기 위한 프로젝트입니다.
-[Expo](https://expo.dev) + React Native + TypeScript로 세팅되어 있으며, 실제 코드를 빌드하지 않고도
-휴대폰의 **Expo Go** 앱으로 즉시 실행/미리보기가 가능합니다 (Mac 없이 iOS 테스트도 가능).
+집 안 물건을 어디에 뒀는지 도면과 사진으로 기록해두고, 이름으로 검색해서 위치를 찾는 모바일 웹앱입니다.
+React + TypeScript + Vite + Tailwind CSS + zustand로 만들었습니다.
 
-## 이 저장소에 이미 세팅된 것
+프로젝트 규칙과 데이터 모델은 [`CLAUDE.md`](./CLAUDE.md)를 참고하세요.
 
-- Expo + React Native + TypeScript 프로젝트 골격 (`App.tsx`, `app.json`, `index.ts`)
-- `.gitignore` (node_modules, 빌드 산출물 등 제외)
-- `AGENTS.md` / `CLAUDE.md` — Expo 공식 템플릿이 자동으로 넣어준, AI가 최신 Expo 문서를 참고하도록 하는 안내 파일
-- `.claude/settings.json` — Expo 전용 Claude Code 플러그인 활성화
-
-## 내 컴퓨터에서 로컬로 바이브 코딩하려면 (이 클라우드 세션과 별개로)
-
-이 세션은 클라우드에 격리된 임시 컨테이너입니다. 내 실제 컴퓨터에서도 Claude Code로 작업하고 싶다면
-아래를 로컬 컴퓨터에 설치하세요.
-
-1. **Node.js (LTS, 20 이상 권장)** — https://nodejs.org 에서 설치
-2. **Git** — https://git-scm.com
-3. **Claude Code CLI** — 터미널에서:
-   ```bash
-   npm install -g @anthropic-ai/claude-code
-   ```
-4. **휴대폰에 Expo Go 앱 설치** — 앱스토어/플레이스토어에서 "Expo Go" 검색 후 설치
-5. 저장소 클론 후:
-   ```bash
-   git clone https://github.com/a-jehxx/aieoghl
-   cd aieoghl
-   npm install
-   ```
-
-## 앱 실행하고 휴대폰에서 미리보기
+## 로컬에서 실행하기
 
 ```bash
-npm start
+npm install
+npm run dev
 ```
 
-터미널에 QR 코드가 뜨면, 휴대폰의 **Expo Go 앱**으로 스캔하면 바로 내 폰에서 앱이 실행됩니다.
-코드를 수정하면 자동으로 새로고침됩니다 (Fast Refresh).
+터미널에 나오는 주소(기본 `http://localhost:5173`)를 브라우저에서 열면 됩니다.
 
-- `npm run android` — 안드로이드 에뮬레이터/기기로 실행
-- `npm run ios` — iOS 시뮬레이터로 실행 (Mac 필요, 실제 기기는 Expo Go로 충분)
-- `npm run web` — 브라우저에서 실행
+## 같은 와이파이에 있는 휴대폰에서 확인하기
 
-## 이제부터 바이브 코딩 하는 법
+```bash
+npm run dev -- --host
+```
 
-Claude Code(이 세션 또는 로컬 CLI)에게 "로그인 화면 만들어줘", "리스트에 스와이프 삭제 추가해줘" 처럼
-원하는 기능을 말로 설명하면 `App.tsx`를 비롯한 코드를 직접 작성/수정해 줍니다.
-화면에 바로 반영되는지는 `npm start`로 띄운 뒤 Expo Go로 확인하면서 진행하면 됩니다.
+터미널에 표시되는 `Network` 주소(예: `http://192.168.0.x:5173`)를 휴대폰 Chrome 브라우저 주소창에 입력해서 접속합니다.
+접속 후 브라우저 메뉴에서 "홈 화면에 추가"를 하면 앱처럼 사용할 수 있습니다.
+
+## 빌드
+
+```bash
+npm run build
+npm run preview
+```
+
+## 현재 상태
+
+지금은 화면 골격과 로컬(메모리) 데이터 저장만 구현되어 있습니다. 새로고침하면 데이터가 초기화됩니다.
+Firebase 연결(실제 저장)은 이후 단계에서 추가할 예정입니다.
