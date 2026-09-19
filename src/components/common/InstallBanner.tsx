@@ -58,32 +58,47 @@ export function InstallBanner() {
     setPromptEvent(null);
   }
 
-  if (!isMain || dismissed || !promptEvent || isStandalone()) {
+  if (!isMain || dismissed || isStandalone()) {
     return null;
   }
 
   return (
     <div className="absolute inset-x-3 bottom-3 z-30 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
-      <p className="text-sm font-medium text-slate-900">앱처럼 설치해서 쓰시겠어요?</p>
-      <div className="mt-2 flex gap-2">
-        <button
-          type="button"
-          onClick={handleInstall}
-          className="h-10 flex-1 rounded-lg bg-blue-600 text-sm font-medium text-white active:opacity-80"
-        >
-          설치하기
-        </button>
-        <button
-          type="button"
-          onClick={handleDismiss}
-          className="h-10 flex-1 rounded-lg bg-slate-100 text-sm font-medium text-slate-700 active:bg-slate-200"
-        >
-          닫기
-        </button>
-      </div>
-      <p className="mt-2 text-xs text-slate-400">
-        설치 버튼이 안 보이면 Chrome 메뉴(⋮) → 홈 화면에 추가
-      </p>
+      {promptEvent ? (
+        <>
+          <p className="text-sm font-medium text-slate-900">앱처럼 설치해서 쓰시겠어요?</p>
+          <div className="mt-2 flex gap-2">
+            <button
+              type="button"
+              onClick={handleInstall}
+              className="h-10 flex-1 rounded-lg bg-blue-600 text-sm font-medium text-white active:opacity-80"
+            >
+              설치하기
+            </button>
+            <button
+              type="button"
+              onClick={handleDismiss}
+              className="h-10 flex-1 rounded-lg bg-slate-100 text-sm font-medium text-slate-700 active:bg-slate-200"
+            >
+              닫기
+            </button>
+          </div>
+        </>
+      ) : (
+        <div className="flex items-center gap-2">
+          <p className="flex-1 text-xs text-slate-500">
+            앱처럼 설치하려면 Chrome 메뉴(⋮) → 홈 화면에 추가를 눌러주세요.
+          </p>
+          <button
+            type="button"
+            onClick={handleDismiss}
+            aria-label="닫기"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 active:bg-slate-100"
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </div>
   );
 }

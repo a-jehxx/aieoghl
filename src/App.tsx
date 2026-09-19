@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigationStore, type Screen } from '@/store/navigationStore';
 import { useGuideStore } from '@/store/guideStore';
+import { useDemoStore } from '@/store/demoStore';
 import { useConnectionStore } from '@/firebase/connection';
 import { formatLocationPath } from '@/lib/search';
 import { TopBar } from '@/components/common/TopBar';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { GuideBanner } from '@/components/common/GuideBanner';
 import { OfflineBanner } from '@/components/common/OfflineBanner';
+import { DemoBanner } from '@/components/common/DemoBanner';
 import { InstallBanner } from '@/components/common/InstallBanner';
 import { Toast } from '@/components/common/Toast';
 import { SearchOverlay } from '@/components/search/SearchOverlay';
@@ -77,6 +79,8 @@ export default function App() {
   const handlePopState = useNavigationStore((s) => s.handlePopState);
   const guideTarget = useGuideStore((s) => s.target);
   const stopGuide = useGuideStore((s) => s.stop);
+  const demoActive = useDemoStore((s) => s.active);
+  const exitDemo = useDemoStore((s) => s.exit);
   const connected = useConnectionStore((s) => s.connected);
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -125,7 +129,8 @@ export default function App() {
   return (
     <div className="flex h-dvh flex-col bg-slate-50">
       <TopBar title={getScreenTitle(current)} onBack={goBack} onHome={goHome} extra={extra} />
-      {!connected && <OfflineBanner />}
+      {!connected && !demoActive && <OfflineBanner />}
+      {demoActive && <DemoBanner onExit={exitDemo} />}
       {guideTarget && (
         <GuideBanner
           itemName={guideTarget.itemName}

@@ -85,6 +85,10 @@ export function createMemoryRepository(): Repository {
       houses.delete(id);
       houseSubs.notify(ALL_HOUSES_KEY, () => [...houses.values()]);
     },
+    async joinHouse(code) {
+      // 메모리 구현에는 기기별 멤버십 개념이 없다(집 목록이 이미 전부 보인다) — 존재 여부만 확인한다.
+      return houses.get(code);
+    },
 
     // 층
     async listFloors(houseId) {

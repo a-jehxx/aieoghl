@@ -13,6 +13,8 @@ export interface Repository {
   createHouse(input: { name: string; ownerUid: string }): Promise<House>;
   updateHouse(id: string, patch: Partial<{ name: string }>): Promise<House>;
   removeHouse(id: string): Promise<void>;
+  /** code(집 id)로 집에 참여한다. 이 기기를 멤버로 등록해 집 목록에 보이게 한다. 존재하지 않으면 undefined. */
+  joinHouse(code: string, uid: string): Promise<House | undefined>;
 
   // 층
   listFloors(houseId: string): Promise<Floor[]>;

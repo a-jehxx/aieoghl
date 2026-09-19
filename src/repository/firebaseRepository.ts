@@ -284,6 +284,14 @@ export function createFirebaseRepository(): Repository {
       // 하위 항목의 entityIndex 항목은 정리하지 않고 남겨둔다(임시 규칙 단계의 의도적 단순화).
       // 존재하지 않는 houseId를 가리키게 될 뿐이라 다시 조회되어도 "찾을 수 없음"으로 안전하게 끝난다.
     },
+    async joinHouse(code, uid) {
+      assertOnline();
+      const snap = await get(ref(db, `houses/${code}`));
+      if (!snap.exists()) return undefined;
+      await update(ref(db), { [`houses/${code}/members/${uid}`]: true });
+      addDeviceHouseId(code);
+      return toHouse(code, snap.val());
+    },
 
     // 층
     async listFloors(houseId) {
