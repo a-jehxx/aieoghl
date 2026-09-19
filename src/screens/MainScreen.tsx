@@ -137,7 +137,7 @@ export function MainScreen() {
                 <button
                   type="button"
                   onClick={() => openHouse(house)}
-                  className="flex h-16 flex-1 items-center px-4 text-left text-lg font-medium text-ink active:bg-bg"
+                  className="flex h-20 flex-1 items-center px-4 text-left text-lg font-medium text-ink active:bg-bg"
                 >
                   {house.name}
                 </button>
