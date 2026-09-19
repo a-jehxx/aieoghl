@@ -7,6 +7,7 @@ import { TopBar } from '@/components/common/TopBar';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { GuideBanner } from '@/components/common/GuideBanner';
 import { OfflineBanner } from '@/components/common/OfflineBanner';
+import { InstallBanner } from '@/components/common/InstallBanner';
 import { Toast } from '@/components/common/Toast';
 import { SearchOverlay } from '@/components/search/SearchOverlay';
 import { MainScreen } from '@/screens/MainScreen';
@@ -133,7 +134,10 @@ export default function App() {
           onStop={stopGuide}
         />
       )}
-      <main className="flex-1 overflow-hidden">{renderScreen(current)}</main>
+      <main className="relative flex-1 overflow-hidden">
+        {renderScreen(current)}
+        <InstallBanner />
+      </main>
       <ConfirmDialog
         open={exitConfirmOpen}
         title="앱을 종료하시겠습니까?"
