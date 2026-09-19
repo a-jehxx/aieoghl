@@ -89,7 +89,7 @@ export function MainScreen() {
 
   async function handleJoin(code: string) {
     try {
-      const house = await repository.joinHouse(code, await getOwnerUid());
+      const house = await repository.joinHouse(code.toUpperCase(), await getOwnerUid());
       if (!house) {
         showToast('존재하지 않는 코드예요.');
         return;
@@ -184,7 +184,7 @@ export function MainScreen() {
         open={dialog.type === 'join'}
         title="가족 코드로 참여"
         description="가족이 알려준 집 코드를 입력해주세요."
-        placeholder="집 코드"
+        placeholder="예: AB3D7FQK"
         confirmLabel="참여"
         onConfirm={handleJoin}
         onCancel={() => setDialog({ type: 'none' })}

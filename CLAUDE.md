@@ -24,7 +24,7 @@
 
 ## 4. 데이터 모델
 모든 항목에 id(uuid), createdAt, updatedAt을 둔다. 좌표는 이미지 기준 0~1 비율로 저장한다.
-- House: name, ownerUid
+- House: name, ownerUid, shareCode(가족 공유 코드, 공유 중이 아니면 null)
 - Floor: houseId, name, order, planPhotoId
 - Room: floorId, name, points[{x,y}]
 - Furniture: roomId, name, photoId, x, y (방 화면 캔버스 위치)
@@ -74,4 +74,11 @@
   - InstallBanner를 보완: beforeinstallprompt 이벤트가 오지 않는 환경(설치가 이미 불가하거나 브라우저가 지원하지 않을 때)에도 "Chrome 메뉴(⋮) → 홈 화면에 추가" 안내를 항상 보여주도록 고쳤다(전에는 이벤트가 없으면 아무것도 안 보였다).
   - 오류 처리 점검: 사진 권한 거부(파일 선택 취소 시 조용히 무시), 인터넷 끊김(OfflineBanner + 쓰기 차단), 저장 실패(모든 변경에 try/catch + 토스트), 큰 사진(1.5MB 넘으면 재압축), 이름 빈 칸(PromptDialog가 공백만 입력하면 확인 버튼 비활성화), 존재하지 않는 코드(위 참조) — 모두 실제 동작을 Playwright로 확인했다.
   - Firebase Hosting 배포 설정(SPA rewrite, 캐시 헤더)은 P6에서 이미 만들어 뒀고, 이번에는 실제 배포 명령과 확인 목록을 안내했다(무료 Spark 요금제만 사용, Cloud Functions·Blaze 미사용).
-- 이후 단계(P8~): 보안 규칙 강화(집 멤버십 기반 접근 제한), 가족 공유 코드 생성·보기 화면.
+- P8 (완료): 가족 공유. 공유 단위는 집이고, 참여한 구성원은 모두 같은 권한(편집·검색)을 가진다. 공유 중지와 코드 재발급은 소유자만 한다.
+  - 가족 코드: 헷갈리는 글자(0,O,1,I)를 뺀 대문자+숫자 32종 중 crypto.getRandomValues로 뽑은 8자리(`src/lib/shareCode.ts`, byte & 31로 치우침 없이 32종에 매핑). `joinCodes/{code} = houseId`로 저장하고, 집 데이터는 그대로 houseId 경로에 있어서 코드를 바꿔도(재발급) 데이터는 안 바뀐다. 현재 코드는 `houses/{houseId}/shareCode`에도 함께 저장해(재발급·공유중지 때 이전 코드를 지우기 위한 역참조) 두 값을 항상 같은 트랜잭션(update() 한 번)으로 맞춘다.
+  - 집 화면 상단바에 "가족 공유"(👪) 버튼 → 새 화면(ShareScreen)에서 코드 표시·복사(navigator.clipboard)·공유(navigator.share 있으면)·소유자만 코드 재발급을 할 수 있다. 공유 중이 아니면(소유자만 볼 수 있는 상태) "공유 시작하기"로 처음 코드를 만든다.
+  - 메인 화면의 "가족 코드로 참여"가 이제 진짜로 동작한다(`repository.joinHouse`가 joinCodes에서 houseId를 찾아 멤버로 등록 — 멤버로 먼저 등록해야 그다음에 집 정보를 읽을 수 있다, 읽기 권한 자체가 멤버십에 달려 있어서). 코드가 틀리면 "존재하지 않는 코드예요."
+  - "가족 공유 그만하기"(화면 하단 버튼, 라벨은 역할에 따라 "집에서 나가기"/"공유 중지"): 구성원은 leaveHouse(본인 멤버십만 제거, 확인 팝업에 "집 데이터는 그대로 남아요" 안내 후 메인으로 이동), 소유자는 stopSharing(joinCode 삭제 + 소유자 외 모든 구성원 제거, 확인 팝업에 "다시 공유하려면 코드를 새로 만들어야 함" 안내).
+  - `database.rules.json` 전면 교체(임시 규칙 → 실제 규칙): `houses/$houseId`는 그 집 members에 내 uid가 있어야 읽을 수 있고(houses 루트 자체에는 규칙이 없어 전체 목록 조회는 막힘), 쓰기는 "생성 시점(아직 없고 내가 ownerUid+최초 멤버)" 또는 "집 전체 삭제(기존 멤버)"만 최상위에서 허용하고 나머지(name/floors/rooms/furniture/bins/items/photos 등)는 각 하위 경로에 "현재 멤버만" 규칙을 따로 둬서, members 하위만 별도로 세분화할 수 있게 했다. `members/$uid`는 본인이 (공유 활성 상태일 때) 자신을 추가하거나 언제든 자신을 제거하는 것, 그리고 소유자가 아무 멤버나 추가/제거하는 것만 허용한다. `shareCode`는 소유자만 쓸 수 있다. `joinCodes/$code`는 로그인한 사용자면 정확한 코드로 한 건 읽기는 되지만 목록 조회는 안 되고(joinCodes 루트에 규칙 없음), 생성·삭제는 그 코드가 가리키는 집의 소유자만 할 수 있다(다른 위치의 값이므로 `root.child(...)`로 대상 집의 ownerUid를 확인). `entityIndex`는 기존처럼 로그인한 사용자면 누구나 읽고 쓸 수 있는 임시 단순화를 유지한다(어떤 id가 어느 집 소속인지만 담고 있어 유출돼도 실제 집 데이터 접근권을 안 주기 때문).
+  - 멤버십을 잃은 기기(나가기/추방)가 계속 그 집을 구독하다 권한 거부로 실패하면 조용히 기기 목록(`deviceHouses`)에서도 정리하도록 `listHouses`/`subscribeHouses`를 보강했다.
+  - 알려진 한계: 다른 구성원이 실시간으로 나를 추방해도, 내 화면에는 별도 알림 없이 다음에 그 집 목록을 다시 불러올 때(재구독 시)에만 사라진다(실시간 "추방 알림"은 이번 범위 밖).

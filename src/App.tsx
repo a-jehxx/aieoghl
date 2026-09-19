@@ -18,6 +18,7 @@ import { FloorScreen } from '@/screens/FloorScreen';
 import { RoomScreen } from '@/screens/RoomScreen';
 import { FurnitureScreen } from '@/screens/FurnitureScreen';
 import { BinScreen } from '@/screens/BinScreen';
+import { ShareScreen } from '@/screens/ShareScreen';
 
 function getScreenTitle(screen: Screen): string {
   switch (screen.type) {
@@ -33,6 +34,8 @@ function getScreenTitle(screen: Screen): string {
       return screen.name;
     case 'bin':
       return screen.name;
+    case 'share':
+      return '가족 공유';
   }
 }
 
@@ -50,6 +53,8 @@ function renderScreen(screen: Screen) {
       return <FurnitureScreen furnitureId={screen.furnitureId} />;
     case 'bin':
       return <BinScreen binId={screen.binId} />;
+    case 'share':
+      return <ShareScreen houseId={screen.houseId} />;
   }
 }
 
@@ -121,6 +126,16 @@ export default function App() {
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xl active:bg-slate-100"
         >
           🗂
+        </button>
+      )}
+      {current.type === 'house' && (
+        <button
+          type="button"
+          onClick={() => push({ type: 'share', houseId: current.houseId, houseName: current.name })}
+          aria-label="가족 공유"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-xl active:bg-slate-100"
+        >
+          👪
         </button>
       )}
     </>

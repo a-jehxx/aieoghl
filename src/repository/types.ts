@@ -13,8 +13,16 @@ export interface Repository {
   createHouse(input: { name: string; ownerUid: string }): Promise<House>;
   updateHouse(id: string, patch: Partial<{ name: string }>): Promise<House>;
   removeHouse(id: string): Promise<void>;
-  /** code(집 id)로 집에 참여한다. 이 기기를 멤버로 등록해 집 목록에 보이게 한다. 존재하지 않으면 undefined. */
+
+  // 가족 공유
+  /** 가족 공유 코드로 집에 참여한다. 이 기기를 멤버로 등록해 집 목록에 보이게 한다. 존재하지 않으면 undefined. */
   joinHouse(code: string, uid: string): Promise<House | undefined>;
+  /** 이 집의 공유 코드를 새로 만들거나(없으면) 재발급한다(있으면 기존 코드를 지우고 새로 만든다). */
+  createOrRegenerateShareCode(houseId: string): Promise<string>;
+  /** 구성원이 이 집에서 나간다. 본인 멤버십만 지운다 — 집 데이터는 그대로 남는다. */
+  leaveHouse(houseId: string, uid: string): Promise<void>;
+  /** 소유자가 공유를 중지한다. 공유 코드를 지우고 소유자 외 모든 구성원을 제거한다. */
+  stopSharing(houseId: string): Promise<void>;
 
   // 층
   listFloors(houseId: string): Promise<Floor[]>;

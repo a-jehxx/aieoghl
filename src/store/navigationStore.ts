@@ -6,7 +6,8 @@ export type Screen =
   | { type: 'floor'; floorId: string; name: string; houseId: string; houseName: string }
   | { type: 'room'; roomId: string; name: string }
   | { type: 'furniture'; furnitureId: string; name: string }
-  | { type: 'bin'; binId: string; name: string };
+  | { type: 'bin'; binId: string; name: string }
+  | { type: 'share'; houseId: string; houseName: string };
 
 interface NavigationState {
   stack: Screen[];

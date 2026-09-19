@@ -9,6 +9,8 @@ export interface House {
   updatedAt: number;
   name: string;
   ownerUid: string;
+  /** 가족 공유 코드(8자리). 공유 중이 아니면 null. */
+  shareCode: string | null;
 }
 
 export interface Floor {

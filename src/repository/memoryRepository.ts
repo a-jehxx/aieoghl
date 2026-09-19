@@ -1,6 +1,7 @@
 import type { Bin, Floor, Furniture, House, Item, Photo, Room } from '@/types';
 import type { Repository } from './types';
 import { generateId } from '@/lib/id';
+import { generateShareCode } from '@/lib/shareCode';
 
 function now() {
   return Date.now();
@@ -36,6 +37,7 @@ const ALL_HOUSES_KEY = '*';
 
 export function createMemoryRepository(): Repository {
   const houses = new Map<string, House>();
+  const joinCodes = new Map<string, string>();
   const floors = new Map<string, Floor>();
   const rooms = new Map<string, Room>();
   const furniturePieces = new Map<string, Furniture>();
@@ -66,7 +68,7 @@ export function createMemoryRepository(): Repository {
       return houses.get(id);
     },
     async createHouse(input) {
-      const house: House = { id: makeId(), createdAt: now(), updatedAt: now(), ...input };
+      const house: House = { id: makeId(), createdAt: now(), updatedAt: now(), shareCode: null, ...input };
       houses.set(house.id, house);
       houseSubs.notify(ALL_HOUSES_KEY, () => [...houses.values()]);
       return house;
@@ -80,14 +82,39 @@ export function createMemoryRepository(): Repository {
       return updated;
     },
     async removeHouse(id) {
+      const house = houses.get(id);
+      if (house?.shareCode) joinCodes.delete(house.shareCode);
       const childFloors = [...floors.values()].filter((f) => f.houseId === id);
       await Promise.all(childFloors.map((f) => repository.removeFloor(f.id)));
       houses.delete(id);
       houseSubs.notify(ALL_HOUSES_KEY, () => [...houses.values()]);
     },
     async joinHouse(code) {
-      // 메모리 구현에는 기기별 멤버십 개념이 없다(집 목록이 이미 전부 보인다) — 존재 여부만 확인한다.
-      return houses.get(code);
+      const houseId = joinCodes.get(code);
+      // 메모리 구현에는 기기별 멤버십 개념이 없다(집 목록이 이미 전부 보인다) — 코드가 가리키는 집이 있는지만 확인한다.
+      return houseId ? houses.get(houseId) : undefined;
+    },
+    async createOrRegenerateShareCode(houseId) {
+      const house = houses.get(houseId);
+      if (!house) throw new Error('집을 찾을 수 없습니다.');
+      if (house.shareCode) joinCodes.delete(house.shareCode);
+      const code = generateShareCode();
+      joinCodes.set(code, houseId);
+      const updated = { ...house, shareCode: code, updatedAt: now() };
+      houses.set(houseId, updated);
+      houseSubs.notify(ALL_HOUSES_KEY, () => [...houses.values()]);
+      return code;
+    },
+    async leaveHouse() {
+      // 로컬(메모리) 저장소는 이 기기가 곧 유일한 사용자라 "나가기"가 의미가 없다.
+    },
+    async stopSharing(houseId) {
+      const house = houses.get(houseId);
+      if (!house) return;
+      if (house.shareCode) joinCodes.delete(house.shareCode);
+      const updated = { ...house, shareCode: null, updatedAt: now() };
+      houses.set(houseId, updated);
+      houseSubs.notify(ALL_HOUSES_KEY, () => [...houses.values()]);
     },
 
     // 층

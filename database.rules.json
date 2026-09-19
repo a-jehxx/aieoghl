@@ -1,22 +1,62 @@
 {
   "rules": {
-    ".read": "auth != null",
-    ".write": "auth != null",
     "houses": {
       "$houseId": {
+        ".read": "auth != null && data.child('members').child(auth.uid).exists()",
+
+        ".write": "auth != null && ((!data.exists() && newData.child('ownerUid').val() === auth.uid && newData.child('members').child(auth.uid).val() === true) || (data.exists() && !newData.exists() && data.child('members').child(auth.uid).exists()))",
+
+        "name": {
+          ".write": "auth != null && root.child('houses').child($houseId).child('members').child(auth.uid).exists()"
+        },
+        "updatedAt": {
+          ".write": "auth != null && root.child('houses').child($houseId).child('members').child(auth.uid).exists()"
+        },
+        "shareCode": {
+          ".write": "auth != null && root.child('houses').child($houseId).child('ownerUid').val() === auth.uid"
+        },
+
+        "members": {
+          "$uid": {
+            ".write": "auth != null && (($uid === auth.uid && ((newData.val() === true && root.child('houses').child($houseId).child('shareCode').exists()) || !newData.exists())) || root.child('houses').child($houseId).child('ownerUid').val() === auth.uid)"
+          }
+        },
+
+        "floors": {
+          ".write": "auth != null && root.child('houses').child($houseId).child('members').child(auth.uid).exists()"
+        },
         "rooms": {
+          ".write": "auth != null && root.child('houses').child($houseId).child('members').child(auth.uid).exists()",
           ".indexOn": ["floorId"]
         },
         "furniture": {
+          ".write": "auth != null && root.child('houses').child($houseId).child('members').child(auth.uid).exists()",
           ".indexOn": ["roomId"]
         },
         "bins": {
+          ".write": "auth != null && root.child('houses').child($houseId).child('members').child(auth.uid).exists()",
           ".indexOn": ["furnitureId"]
         },
         "items": {
+          ".write": "auth != null && root.child('houses').child($houseId).child('members').child(auth.uid).exists()",
           ".indexOn": ["binId"]
+        },
+        "photos": {
+          ".write": "auth != null && root.child('houses').child($houseId).child('members').child(auth.uid).exists()"
         }
       }
+    },
+
+    "joinCodes": {
+      "$code": {
+        ".read": "auth != null",
+        ".write": "auth != null && ((!data.exists() && newData.exists() && root.child('houses').child(newData.val()).child('ownerUid').val() === auth.uid) || (data.exists() && !newData.exists() && root.child('houses').child(data.val()).child('ownerUid').val() === auth.uid))"
+      }
+    },
+
+    "entityIndex": {
+      ".read": "auth != null",
+      ".write": "auth != null"
     }
   }
 }

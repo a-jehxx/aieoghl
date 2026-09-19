@@ -1,7 +1,8 @@
-import { equalTo, get, onValue, orderByChild, query, ref, remove, update, type Database } from 'firebase/database';
+import { equalTo, get, onValue, orderByChild, query, ref, update, type Database } from 'firebase/database';
 import type { Bin, Floor, Furniture, House, Item, Photo, Room } from '@/types';
 import type { Repository } from './types';
 import { generateId } from '@/lib/id';
+import { generateShareCode } from '@/lib/shareCode';
 import { getAuthReady, getFirebaseDb } from '@/firebase/app';
 import { isConnected, watchFirebaseConnection } from '@/firebase/connection';
 import { addDeviceHouseId, getDeviceHouseIds, removeDeviceHouseId } from '@/lib/deviceHouses';
@@ -38,6 +39,7 @@ function toHouse(id: string, v: Record<string, unknown>): House {
     id,
     name: v.name as string,
     ownerUid: v.ownerUid as string,
+    shareCode: (v.shareCode as string | null | undefined) ?? null,
     createdAt: v.createdAt as number,
     updatedAt: v.updatedAt as number,
   };
@@ -229,9 +231,17 @@ export function createFirebaseRepository(): Repository {
     // 집
     async listHouses() {
       const ids = getDeviceHouseIds();
-      const snaps = await Promise.all(ids.map((id) => get(ref(db, `houses/${id}`))));
+      const snaps = await Promise.all(
+        ids.map((id) =>
+          get(ref(db, `houses/${id}`)).catch(() => {
+            // 더 이상 접근 권한이 없다(나가기/추방 등) — 기기 목록에서도 정리한다.
+            removeDeviceHouseId(id);
+            return null;
+          }),
+        ),
+      );
       return snaps
-        .map((snap, i) => (snap.exists() ? toHouse(ids[i], snap.val()) : null))
+        .map((snap, i) => (snap?.exists() ? toHouse(ids[i], snap.val()) : null))
         .filter((h): h is House => h !== null);
     },
     subscribeHouses(callback) {
@@ -242,11 +252,20 @@ export function createFirebaseRepository(): Repository {
       }
       const current = new Map<string, House>();
       const unsubs = ids.map((id) =>
-        onValue(ref(db, `houses/${id}`), (snap) => {
-          if (snap.exists()) current.set(id, toHouse(id, snap.val()));
-          else current.delete(id);
-          callback([...current.values()]);
-        }),
+        onValue(
+          ref(db, `houses/${id}`),
+          (snap) => {
+            if (snap.exists()) current.set(id, toHouse(id, snap.val()));
+            else current.delete(id);
+            callback([...current.values()]);
+          },
+          () => {
+            // 더 이상 접근 권한이 없다(나가기/추방 등) — 기기 목록에서도 정리한다.
+            current.delete(id);
+            removeDeviceHouseId(id);
+            callback([...current.values()]);
+          },
+        ),
       );
       return () => unsubs.forEach((u) => u());
     },
@@ -267,7 +286,7 @@ export function createFirebaseRepository(): Repository {
         [`houses/${id}/members/${uid}`]: true,
       });
       addDeviceHouseId(id);
-      return { id, name: input.name, ownerUid: input.ownerUid, createdAt: ts, updatedAt: ts };
+      return { id, name: input.name, ownerUid: input.ownerUid, shareCode: null, createdAt: ts, updatedAt: ts };
     },
     async updateHouse(id, patch) {
       assertOnline();
@@ -279,18 +298,65 @@ export function createFirebaseRepository(): Repository {
     },
     async removeHouse(id) {
       assertOnline();
-      await remove(ref(db, `houses/${id}`));
+      const snap = await get(ref(db, `houses/${id}`)).catch(() => null);
+      const shareCode = snap?.exists() ? (snap.val().shareCode as string | undefined) : undefined;
+      const paths: Record<string, unknown> = { [`houses/${id}`]: null };
+      if (shareCode) paths[`joinCodes/${shareCode}`] = null;
+      await update(ref(db), paths);
       removeDeviceHouseId(id);
       // 하위 항목의 entityIndex 항목은 정리하지 않고 남겨둔다(임시 규칙 단계의 의도적 단순화).
       // 존재하지 않는 houseId를 가리키게 될 뿐이라 다시 조회되어도 "찾을 수 없음"으로 안전하게 끝난다.
     },
     async joinHouse(code, uid) {
       assertOnline();
-      const snap = await get(ref(db, `houses/${code}`));
-      if (!snap.exists()) return undefined;
-      await update(ref(db), { [`houses/${code}/members/${uid}`]: true });
-      addDeviceHouseId(code);
-      return toHouse(code, snap.val());
+      const codeSnap = await get(ref(db, `joinCodes/${code}`));
+      if (!codeSnap.exists()) return undefined;
+      const houseId = codeSnap.val() as string;
+      // 멤버로 먼저 등록해야 그 다음에 집 정보를 읽을 수 있다(집 읽기 권한은 멤버여야 생긴다).
+      await update(ref(db), { [`houses/${houseId}/members/${uid}`]: true });
+      addDeviceHouseId(houseId);
+      const houseSnap = await get(ref(db, `houses/${houseId}`));
+      if (!houseSnap.exists()) return undefined;
+      return toHouse(houseId, houseSnap.val());
+    },
+    async createOrRegenerateShareCode(houseId) {
+      assertOnline();
+      const snap = await get(ref(db, `houses/${houseId}`));
+      if (!snap.exists()) throw new Error('집을 찾을 수 없습니다.');
+      const oldCode = snap.val().shareCode as string | undefined;
+      let code = generateShareCode();
+      // 극히 드물게 코드가 이미 쓰이고 있으면 다시 뽑는다(32^8개라 충돌 가능성은 사실상 없음).
+      for (let i = 0; i < 5; i++) {
+        const exists = await get(ref(db, `joinCodes/${code}`));
+        if (!exists.exists()) break;
+        code = generateShareCode();
+      }
+      const paths: Record<string, unknown> = {
+        [`houses/${houseId}/shareCode`]: code,
+        [`joinCodes/${code}`]: houseId,
+      };
+      if (oldCode) paths[`joinCodes/${oldCode}`] = null;
+      await update(ref(db), paths);
+      return code;
+    },
+    async leaveHouse(houseId, uid) {
+      assertOnline();
+      await update(ref(db), { [`houses/${houseId}/members/${uid}`]: null });
+      removeDeviceHouseId(houseId);
+    },
+    async stopSharing(houseId) {
+      assertOnline();
+      const snap = await get(ref(db, `houses/${houseId}`));
+      if (!snap.exists()) return;
+      const raw = snap.val();
+      const house = toHouse(houseId, raw);
+      const memberUids = Object.keys((raw.members as Record<string, boolean>) ?? {});
+      const paths: Record<string, unknown> = { [`houses/${houseId}/shareCode`]: null };
+      if (house.shareCode) paths[`joinCodes/${house.shareCode}`] = null;
+      for (const uid of memberUids) {
+        if (uid !== house.ownerUid) paths[`houses/${houseId}/members/${uid}`] = null;
+      }
+      await update(ref(db), paths);
     },
 
     // 층
