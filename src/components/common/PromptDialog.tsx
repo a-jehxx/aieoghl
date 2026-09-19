@@ -38,8 +38,12 @@ export function PromptDialog({
   const trimmed = value.trim();
 
   function handleConfirm() {
-    if (!trimmed) return;
-    onConfirm(trimmed);
+    // 한글 등 조합 입력 중에는 React state(value)가 화면에 보이는 글자보다
+    // 한 박자 늦게 갱신될 수 있다. 버튼을 눌렀을 때는 항상 DOM에 실제로 입력된
+    // 값을 직접 읽어서 판단한다(비활성화 상태 때문에 탭이 아예 씹히는 일을 막는다).
+    const current = (inputRef.current?.value ?? value).trim();
+    if (!current) return;
+    onConfirm(current);
   }
 
   return (
@@ -73,8 +77,9 @@ export function PromptDialog({
           <button
             type="button"
             onClick={handleConfirm}
-            disabled={!trimmed}
-            className="h-11 flex-1 rounded-xl bg-blue-600 text-base font-medium text-white active:bg-blue-700 disabled:opacity-40"
+            className={`h-11 flex-1 rounded-xl bg-blue-600 text-base font-medium text-white active:bg-blue-700 ${
+              trimmed ? '' : 'opacity-40'
+            }`}
           >
             {confirmLabel}
           </button>
