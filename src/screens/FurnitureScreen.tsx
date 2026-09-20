@@ -269,6 +269,21 @@ export function FurnitureScreen({ furnitureId }: FurnitureScreenProps) {
                       }
                       strokeWidth={0.6}
                     />
+                    <text
+                      x={(rect.x + rect.w / 2) * 100}
+                      y={(rect.y + rect.h / 2) * 100}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fontSize={3.6}
+                      fontWeight={600}
+                      fill="#1B2130"
+                      stroke="#FFFFFF"
+                      strokeWidth={0.7}
+                      paintOrder="stroke"
+                      className="pointer-events-none select-none"
+                    >
+                      {bin.name}
+                    </text>
                     {mode === 'edit' && isSelected && (
                       <>
                         {(['tl', 'tr', 'bl', 'br'] as const).map((corner) => {
